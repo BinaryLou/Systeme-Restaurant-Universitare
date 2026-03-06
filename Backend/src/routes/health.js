@@ -11,7 +11,7 @@ router.get('/', (req, res) => {
 
 router.get("/db", async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT 1");
+    const [rows] = await pool.query("SELECT * from menu ");
     res.json({
       status: "database connected",
       result: rows
