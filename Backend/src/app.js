@@ -2,13 +2,16 @@ const express = require('express');
 const { logger } = require('./middlewares/logger');
 const errorHandler = require('./middlewares/errorHandler');
 const healthRoutes = require("./routes/health");
+const protectedRoutes = require("./routes/protected");
+const verifyJwt = require('./middlewares/verifyJwt');
 
 const app = express();
 
 app.use(express.json());
 app.use(logger);
 
-// Health route
+// test routes 
+app.use("/protected", protectedRoutes);
 app.use("/health", healthRoutes);
 
 app.get('/test-error', (req, res) => {
@@ -21,6 +24,7 @@ app.use((req, res) => {
     message: `Route ${req.originalUrl} not found`
   });
 });
+app.use(verifyJwt)
 
 app.use(errorHandler);
 
