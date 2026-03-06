@@ -26,7 +26,7 @@ const errorHandler = (err, req, res, next) => {
   }
 
   return res.status(statusCode).json({
-    status: statusCode >= 500 ? 'error' : 'fail',
+    status: 'error',
     message: safeMessage
   });
 };
