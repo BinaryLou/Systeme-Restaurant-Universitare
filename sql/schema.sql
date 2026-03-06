@@ -1,39 +1,114 @@
-CREATE TABLE utilisateurs (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  apogee VARCHAR(20) NOT NULL UNIQUE,
-  nom VARCHAR(100) NOT NULL,
-  email VARCHAR(100) NOT NULL,
-  mot_de_passe_hash VARCHAR(255) NOT NULL,
-  solde DECIMAL(10,2) DEFAULT 600,
-  code_qr VARCHAR(255) NOT NULL UNIQUE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE DATABASE IF NOT EXISTS ru_ticket;
+
+USE ru_ticket;
+
+SET FOREIGN_KEY_CHECKS = 0; -- sert à désactiver temporairement la vérification des clés étrangères
+
+DROP TABLE IF EXISTS reservation;
+DROP TABLE IF EXISTS menu;
+DROP TABLE IF EXISTS service_repas;
+DROP TABLE IF EXISTS administrateur;
+DROP TABLE IF EXISTS utilisateur;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- TABLE: UTILISATEUR
+CREATE TABLE utilisateur (
+  id_utilisateur     BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  nom                VARCHAR(100) NOT NULL,
+  prenom             VARCHAR(100) NOT NULL,
+  email              VARCHAR(191) NOT NULL,
+  apogee             VARCHAR(50) NOT NULL,
+  mot_de_passe_hash  VARCHAR(255) NOT NULL,
+  solde              DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  code_qr            VARCHAR(191) NOT NULL,
+  created_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (id_utilisateur),
+  UNIQUE KEY uq_utilisateur_email (email),
+  UNIQUE KEY uq_utilisateur_apogee (apogee),
+  UNIQUE KEY uq_utilisateur_code_qr (code_qr)
 );
 
-CREATE TABLE services (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  type_repas ENUM('dejeuner','diner') NOT NULL,
-  heure_debut TIME NOT NULL,
-  heure_fin TIME NOT NULL
+-- TABLE: ADMINISTRATEUR
+CREATE TABLE administrateur (
+  id_admin           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  nom                VARCHAR(100) NOT NULL,
+  prenom             VARCHAR(100) NOT NULL,
+  email              VARCHAR(191) NOT NULL,
+  mot_de_passe_hash  VARCHAR(255) NOT NULL,
+  created_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (id_admin),
+  UNIQUE KEY uq_admin_email (email)
 );
 
-CREATE TABLE reservations (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  id_utilisateur INT NOT NULL,
-  id_service INT NOT NULL,
-  date_repas DATE NOT NULL,
-  statut ENUM('RESERVEE','UTILISEE','ANNULEE') DEFAULT 'RESERVEE',
+-- TABLE: SERVICE_REPAS
+CREATE TABLE service_repas (
+  id_service   BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  type_repas   ENUM('DEJEUNER','DINER') NOT NULL,
+  heure_debut  TIME NOT NULL,
+  heure_fin    TIME NOT NULL,
+  created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-  UNIQUE (id_utilisateur, id_service, date_repas),
-
-  FOREIGN KEY (id_utilisateur) REFERENCES utilisateurs(id) ON DELETE CASCADE,
-  FOREIGN KEY (id_service) REFERENCES services(id) ON DELETE CASCADE
+  PRIMARY KEY (id_service),
+  CONSTRAINT chk_service_heures CHECK (heure_debut < heure_fin)
 );
 
-CREATE INDEX idx_reservation_date ON reservations(date_repas);
-CREATE INDEX idx_reservation_user ON reservations(id_utilisateur);
+-- TABLE: MENU
+CREATE TABLE menu (
+  id_menu      BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  date_menu    DATE NOT NULL,
+  description  TEXT NOT NULL,
+  id_service   BIGINT UNSIGNED NOT NULL,
+  id_admin     BIGINT UNSIGNED NOT NULL,
+  created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
-CREATE TABLE administrateurs (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  email VARCHAR(100) UNIQUE NOT NULL,
-  mot_de_passe_hash VARCHAR(255) NOT NULL
+  PRIMARY KEY (id_menu),
+  KEY idx_menu_service (id_service),
+  KEY idx_menu_admin (id_admin),
+  KEY idx_menu_date (date_menu),
+
+  CONSTRAINT fk_menu_service
+    FOREIGN KEY (id_service) REFERENCES service_repas(id_service)
+    ON UPDATE CASCADE
+    ON DELETE RESTRICT,
+
+  CONSTRAINT fk_menu_admin
+    FOREIGN KEY (id_admin) REFERENCES administrateur(id_admin)
+    ON UPDATE CASCADE
+    ON DELETE RESTRICT
+);
+
+-- TABLE: RESERVATION
+CREATE TABLE reservation (
+  id_reservation   BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  date_creation    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  date_repas       DATE NOT NULL,
+  statut           ENUM('EN_ATTENTE','CONFIRMEE','ANNULEE','VALIDEE') NOT NULL DEFAULT 'EN_ATTENTE',
+  date_validation  DATETIME NULL,
+  id_utilisateur   BIGINT UNSIGNED NOT NULL,
+  id_service       BIGINT UNSIGNED NOT NULL,
+  created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (id_reservation),
+  KEY idx_res_user (id_utilisateur),
+  KEY idx_res_service (id_service),
+  KEY idx_res_date_repas (date_repas),
+  KEY idx_res_statut (statut),
+
+  CONSTRAINT fk_reservation_utilisateur
+    FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id_utilisateur)
+    ON UPDATE CASCADE
+    ON DELETE RESTRICT,
+
+  CONSTRAINT fk_reservation_service
+    FOREIGN KEY (id_service) REFERENCES service_repas(id_service)
+    ON UPDATE CASCADE
+    ON DELETE RESTRICT
 );
