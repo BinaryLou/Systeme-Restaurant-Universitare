@@ -3,7 +3,8 @@ const { logger } = require('./middlewares/logger');
 const errorHandler = require('./middlewares/errorHandler');
 const healthRoutes = require("./routes/health");
 const protectedRoutes = require("./routes/protected");
-const verifyJwt = require('./middlewares/verifyJwt');
+const verifyJwt = require('./middlewares/verifyJWT');
+const adminRoutes = require("./routes/admin");
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(logger);
 // test routes 
 app.use("/protected", protectedRoutes);
 app.use("/health", healthRoutes);
+app.use("/admin", adminRoutes);
 
 app.get('/test-error', (req, res) => {
   throw new Error('Test error');

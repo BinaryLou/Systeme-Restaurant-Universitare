@@ -9,7 +9,7 @@ router.get('/', (req, res) => {
   });
 });
 
-router.get("/db", async (req, res) => {
+router.get("/db", async (req, res, next) => {
   try {
     const [rows] = await pool.query("SELECT * from menu ");
     res.json({
@@ -17,10 +17,8 @@ router.get("/db", async (req, res) => {
       result: rows
     });
   } catch (err) {
-    res.status(500).json({
-        status: "error", 
-        message: err.message
-    });
+    err.statusCode = 500;
+    return next(err);
   }
 });
 
