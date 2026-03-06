@@ -11,7 +11,7 @@ VALUES
   'youssef@ensa.ma',
   'A12345',
   '$2b$10$zQDbS9e7UmEYFkiHjdAu5ebZhnFKNcxsxi.2q/pXBs1eJS23SiwsK',
-  500.00,
+  600.00,
   'QR12345'
 ),
 (
@@ -20,7 +20,7 @@ VALUES
   'sara@ensa.ma',
   'A12346',
   '$2b$10$CICtmntKX/K09CmtsSCp8erGLiweJKbM3vTQoDiL/zjOx9Wd4jOIG',
-  500.00,
+  600.00,
   'QR12346'
 ),
 (
@@ -29,7 +29,7 @@ VALUES
   'ahmed@ensa.ma',
   'A12347',
   '$2b$10$gQ8vYJmP0C3pVxK1X6qCMeR9h2W7X8Y9Z0a1b2c3d4e5f6g7h8i',
-  500.00,
+  600.00,
   'QR12347'
 );
 
@@ -71,4 +71,4 @@ INSERT INTO reservation
 VALUES
 ('2026-03-10', 'CONFIRMEE', 1, 1),
 ('2026-03-10', 'CONFIRMEE', 2, 2),
-('2026-03-10', 'EN_ATTENTE', 3, 2);
+('2026-03-10', 'ANNULE', 3, 2);
