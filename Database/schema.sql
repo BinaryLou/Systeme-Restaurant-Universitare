@@ -2,16 +2,6 @@ CREATE DATABASE IF NOT EXISTS ru_ticket;
 
 USE ru_ticket;
 
-SET FOREIGN_KEY_CHECKS = 0; -- sert à désactiver temporairement la vérification des clés étrangères
-
-DROP TABLE IF EXISTS reservation;
-DROP TABLE IF EXISTS menu;
-DROP TABLE IF EXISTS service_repas;
-DROP TABLE IF EXISTS administrateur;
-DROP TABLE IF EXISTS utilisateur;
-
-SET FOREIGN_KEY_CHECKS = 1;
-
 -- TABLE: UTILISATEUR
 CREATE TABLE utilisateur (
   id_utilisateur     BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -111,4 +101,35 @@ CREATE TABLE reservation (
     FOREIGN KEY (id_service) REFERENCES service_repas(id_service)
     ON UPDATE CASCADE
     ON DELETE RESTRICT
+);
+
+-- table refresh tokens
+
+CREATE TABLE refresh_tokens (
+  id_refresh_token BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  token_hash VARCHAR(255) NOT NULL,
+  account_type ENUM('USER', 'ADMIN') NOT NULL,
+  user_id BIGINT UNSIGNED ,
+  admin_id BIGINT UNSIGNED ,
+  expires_at DATETIME NOT NULL,
+  revoked_at DATETIME ,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id_refresh_token),
+  UNIQUE KEY uq_refresh_token_hash (token_hash),
+  KEY idx_refresh_user_id (user_id),
+  KEY idx_refresh_admin_id (admin_id),
+  KEY idx_refresh_expires_at (expires_at),
+  CONSTRAINT fk_refresh_user
+    FOREIGN KEY (user_id) REFERENCES utilisateur(id_utilisateur)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+  CONSTRAINT fk_refresh_admin
+    FOREIGN KEY (admin_id) REFERENCES administrateur(id_admin)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+  CONSTRAINT chk_refresh_owner CHECK (
+    (account_type = 'USER' AND user_id IS NOT NULL AND admin_id IS NULL) OR
+    (account_type = 'ADMIN' AND admin_id IS NOT NULL AND user_id IS NULL)
+  )
 );
