@@ -127,9 +127,5 @@ CREATE TABLE refresh_tokens (
   CONSTRAINT fk_refresh_admin
     FOREIGN KEY (admin_id) REFERENCES administrateur(id_admin)
     ON UPDATE CASCADE
-    ON DELETE CASCADE,
-  CONSTRAINT chk_refresh_owner CHECK (
-    (account_type = 'USER' AND user_id IS NOT NULL AND admin_id IS NULL) OR
-    (account_type = 'ADMIN' AND admin_id IS NOT NULL AND user_id IS NULL)
-  )
+    ON DELETE CASCADE
 );
