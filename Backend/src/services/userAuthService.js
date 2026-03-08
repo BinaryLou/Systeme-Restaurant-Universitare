@@ -1,4 +1,3 @@
-// src/services/authService.js
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 
@@ -6,7 +5,7 @@ const { signAccessToken, signRefreshToken } = require("../utils/jwt");
 const { findUserByApogee } = require("../models/userModel");
 const { createRefreshToken } = require("../models/refreshTokenModel");
 
-const loginStudent = async ({ apogee, password }) => {
+const loginUser = async ({ apogee, password }) => {
   if (!apogee || !password) {
     const err = new Error("Code Apogée et mot de passe sont obligatoires");
     err.statusCode = 400;
@@ -74,5 +73,5 @@ const loginStudent = async ({ apogee, password }) => {
 };
 
 module.exports = {
-  loginStudent,
+  loginUser,
 };
