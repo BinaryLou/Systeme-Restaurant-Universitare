@@ -4,28 +4,23 @@ const crypto = require("crypto");
 const { findAdminByEmail } = require("../models/adminModel");
 const { createRefreshToken } = require("../models/refreshTokenModel");
 const { signAccessToken, signRefreshToken } = require("../utils/jwt");
+const AppError = require("../utils/AppError");
 
 const loginAdmin = async (email, password) => {
   if (!email || !password) {
-    const err = new Error("Email et mot de passe sont requis");
-    err.statusCode = 400;
-    throw err;
+    throw new AppError("Email et mot de passe sont requis", 400);
   }
 
   const admin = await findAdminByEmail(email.trim().toLowerCase());
 
   if (!admin) {
-    const err = new Error("Identifiants invalides");
-    err.statusCode = 401;
-    throw err;
+    throw new AppError("Identifiants invalides", 401);
   }
 
   const isMatch = await bcrypt.compare(password, admin.mot_de_passe_hash);
 
   if (!isMatch) {
-    const err = new Error("Identifiants invalides");
-    err.statusCode = 401;
-    throw err;
+    throw new AppError("Identifiants invalides", 401);
   }
 
   const payload = {
@@ -60,8 +55,7 @@ const loginAdmin = async (email, password) => {
       role: "ADMIN"
     },
     tokens: {
-      accessToken,
-      refreshToken
+      accessToken
     }
   };
 };

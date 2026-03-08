@@ -1,4 +1,5 @@
 const { verifyAccessToken } = require("../utils/jwt");
+const AppError = require("../utils/AppError");
 
 function getBearerToken(req) {
   const authHeader = req.headers.authorization;
@@ -15,9 +16,7 @@ const verifyJwt = (req, res, next) => {
     const token = getBearerToken(req);
 
     if (!token) {
-      const err = new Error("Missing token");
-      err.statusCode = 401;
-      return next(err);
+      return next(new AppError("Missing Token", 401));
     }
 
     const decoded = verifyAccessToken(token);
@@ -29,12 +28,7 @@ const verifyJwt = (req, res, next) => {
 
     return next();
   } catch (e) {
-    const err = new Error("Invalid or expired token");
-    err.statusCode = 401;
-
-    if (process.env.NODE_ENV !== "production") err.debug = e.message;
-
-    return next(err);
+    return next(new AppError("Invalid or expired token", 401));
   }
 };
 

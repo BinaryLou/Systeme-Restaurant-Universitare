@@ -4,20 +4,17 @@ const crypto = require("crypto");
 const { signAccessToken, signRefreshToken } = require("../utils/jwt");
 const { findUserByApogee } = require("../models/userModel");
 const { createRefreshToken } = require("../models/refreshTokenModel");
+const AppError = require("../utils/AppError");
 
 const loginUser = async ({ apogee, password }) => {
   if (!apogee || !password) {
-    const err = new Error("Code Apogée et mot de passe sont obligatoires");
-    err.statusCode = 400;
-    throw err;
+    throw new AppError("Code Apogée et mot de passe sont obligatoires", 400);
   }
 
-  const user = await findUserByApogee(apogee);
+  const user = await findUserByApogee(apogee.trim());
 
   if (!user) {
-    const err = new Error("Identifiants invalides");
-    err.statusCode = 401;
-    throw err;
+    throw new AppError("Identifiants invalides", 401);
   }
 
   const isPasswordValid = await bcrypt.compare(
@@ -26,9 +23,7 @@ const loginUser = async ({ apogee, password }) => {
   );
 
   if (!isPasswordValid) {
-    const err = new Error("Identifiants invalides");
-    err.statusCode = 401;
-    throw err;
+    throw new AppError("Identifiants invalides", 401);
   }
 
   const payload = {
@@ -66,8 +61,7 @@ const loginUser = async ({ apogee, password }) => {
       role: "USER",
     },
     tokens: {
-      accessToken,
-      refreshToken,
+      accessToken
     },
   };
 };

@@ -1,4 +1,5 @@
 const { loginUser } = require("../services/userAuthService");
+const { sendSuccess } = require("../utils/apiResponse");
 
 const userLogin = async (req, res, next) => {
   try {
@@ -13,11 +14,12 @@ const userLogin = async (req, res, next) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.status(200).json({
-      status: "success",
-      message: "Connexion étudiant réussie",
-      data: result
-    });
+    return sendSuccess(
+      res,
+      result,
+      "Connexion étudiant réussie",
+      200
+    );
   } catch (error) {
     next(error);
   }
