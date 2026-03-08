@@ -1,4 +1,5 @@
 const { loginAdmin } = require("../services/adminAuthService");
+const { sendSuccess } = require("../utils/apiResponse");
 
 const adminLogin = async (req, res, next) => {
   try {
@@ -13,11 +14,12 @@ const adminLogin = async (req, res, next) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.status(200).json({
-      status: "success",
-      message: "Connexion administrateur réussie",
-      data: result
-    });
+    return sendSuccess(
+      res,
+      result,
+      "Connexion administrateur réussie",
+      200
+    );
   } catch (error) {
     next(error);
   }
