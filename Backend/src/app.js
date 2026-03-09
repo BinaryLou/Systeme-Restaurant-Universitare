@@ -19,6 +19,7 @@ app.use("/admin", require("./routes/admin"));
 
 //Real Routes
 app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/auth",  require("./routes/authRoutes"));
 
 app.use((req, res) => {
   throw new AppError(`Route ${req.originalUrl} not found`, 404);
