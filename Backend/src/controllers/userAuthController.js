@@ -18,7 +18,10 @@ const userLogin = async (req, res, next) => {
 
     return sendSuccess(
       res,
-      result,
+      {
+        user: result.user,
+        accessToken: result.tokens.accessToken,
+      },
       "Connexion étudiant réussie",
       200
     );

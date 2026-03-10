@@ -26,6 +26,13 @@ const refreshAccessToken = async (refreshToken) => {
     throw new AppError("Refresh token invalide ou introuvable", 401);
   }
 
+  if (
+    (decoded.role === "USER" && !storedToken.user_id) ||
+    (decoded.role === "ADMIN" && !storedToken.admin_id)
+  ) {
+    throw new AppError("Refresh token incohérent", 401);
+  }
+
   const payload = {
     id: decoded.id,
     role: decoded.role,

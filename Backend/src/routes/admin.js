@@ -1,6 +1,6 @@
 // TEST ROUTE
 const express = require("express");
-const verifyJWT = require("../middlewares/verifyJWT");
+const verifyJWT = require("../middlewares/verifyJwt");
 const requireRole = require("../middlewares/requireRole");
 
 const router = express.Router();

@@ -3,8 +3,13 @@ const { sendSuccess } = require("../utils/apiResponse");
 
 const handleRefreshToken = async (req, res, next) => {
   try {
-    //const { refreshToken } = req.cookies.refreshToken;
-    const { refreshToken } = req.body
+    const cookies = req.cookies
+
+    if (!cookies?.refreshToken) {
+      return next(new AppError("Refresh token manquant", 401));
+    }
+
+    const refreshToken = cookies.refreshToken
 
     const result = await refreshAccessToken(refreshToken);
 
