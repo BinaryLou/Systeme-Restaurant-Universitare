@@ -1,4 +1,4 @@
-const { refreshAccessToken } = require("../services/authTokenService");
+const { refreshAccessToken, logout } = require("../services/authTokenService");
 const { sendSuccess } = require("../utils/apiResponse");
 
 const handleRefreshToken = async (req, res, next) => {
@@ -24,6 +24,27 @@ const handleRefreshToken = async (req, res, next) => {
   }
 };
 
+const handleLogout = async (req, res, next) => {
+  try {
+    const cookies = req.cookies;
+
+    if (cookies?.refreshToken) {
+      await logout(cookies.refreshToken);
+    }
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+    });
+
+    return sendSuccess(res, {}, "Déconnexion réussie", 200);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   handleRefreshToken,
+  handleLogout,
 };
