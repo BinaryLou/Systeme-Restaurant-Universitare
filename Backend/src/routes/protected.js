@@ -1,7 +1,7 @@
 const express = require("express");
 
 const router = express.Router();
-const verifyJwt = require("../middlewares/verifyJWT");
+const verifyJwt = require("../middlewares/verifyJwt");
 
 router.get("/me", verifyJwt, (req, res) => {
   res.json({

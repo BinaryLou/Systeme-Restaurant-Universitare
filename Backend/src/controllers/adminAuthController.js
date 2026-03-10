@@ -16,7 +16,10 @@ const adminLogin = async (req, res, next) => {
 
     return sendSuccess(
       res,
-      result,
+      {
+        admin: result.admin,
+        accessToken: result.tokens.accessToken,
+      },
       "Connexion administrateur réussie",
       200
     );

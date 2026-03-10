@@ -55,7 +55,8 @@ const loginAdmin = async (email, password) => {
       role: "ADMIN"
     },
     tokens: {
-      accessToken
+      accessToken,
+      refreshToken,
     }
   };
 };
