@@ -1,7 +1,10 @@
 const crypto = require("crypto");
 const AppError = require("../utils/AppError");
 const { verifyRefreshToken, signAccessToken } = require("../utils/jwt");
-const { findValidRefreshTokenByHash } = require("../models/refreshTokenModel");
+const {
+  findValidRefreshTokenByHash,
+  revokeRefreshToken,
+} = require("../models/refreshTokenModel");
 
 const refreshAccessToken = async (refreshToken) => {
   if (!refreshToken) {
@@ -45,6 +48,20 @@ const refreshAccessToken = async (refreshToken) => {
   };
 };
 
+const logout = async (refreshToken) => {
+  if (!refreshToken) {
+    return;
+  }
+
+  const tokenHash = crypto
+    .createHash("sha256")
+    .update(refreshToken)
+    .digest("hex");
+
+  await revokeRefreshToken(tokenHash);
+};
+
 module.exports = {
   refreshAccessToken,
+  logout,
 };
