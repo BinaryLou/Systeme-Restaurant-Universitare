@@ -7,7 +7,6 @@ const AppError = require("./utils/AppError");
 const app = express();
 
 app.set("json spaces", 2);
-
 app.use(express.json());
 app.use(cookieParser());
 app.use(logger);
