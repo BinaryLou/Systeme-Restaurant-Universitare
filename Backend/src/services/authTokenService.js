@@ -1,9 +1,14 @@
 const crypto = require("crypto");
 const AppError = require("../utils/AppError");
-const { verifyRefreshToken, signAccessToken } = require("../utils/jwt");
+const {
+  verifyRefreshToken,
+  signAccessToken,
+  signRefreshToken,
+} = require("../utils/jwt");
 const {
   findValidRefreshTokenByHash,
   revokeRefreshToken,
+  createRefreshToken,
 } = require("../models/refreshTokenModel");
 
 const refreshAccessToken = async (refreshToken) => {
@@ -36,15 +41,36 @@ const refreshAccessToken = async (refreshToken) => {
     throw new AppError("Refresh token incohérent", 401);
   }
 
+  await revokeRefreshToken(tokenHash);
+
   const payload = {
     id: decoded.id,
     role: decoded.role,
   };
 
   const accessToken = signAccessToken(payload);
+  const newRefreshToken = signRefreshToken(payload);
+
+  const newTokenHash = crypto
+    .createHash("sha256")
+    .update(newRefreshToken)
+    .digest("hex");
+
+  const refreshExpiresAt = new Date(
+    Date.now() + 7 * 24 * 60 * 60 * 1000
+  );
+
+  await createRefreshToken({
+    tokenHash: newTokenHash,
+    accountType: decoded.role,
+    userId: decoded.role === "USER" ? decoded.id : null,
+    adminId: decoded.role === "ADMIN" ? decoded.id : null,
+    expiresAt: refreshExpiresAt,
+  });
 
   return {
     accessToken,
+    refreshToken: newRefreshToken,
   };
 };
 
