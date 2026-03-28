@@ -1,18 +1,4 @@
-'use strict';
-
 const pool = require('../config/db');
-
-/**
- * Modèle Réservation
- *
- * Hypothèses de schéma basées sur la conception projet :
- * - utilisateur(id_utilisateur, solde, ...)
- * - service_repas(id_service, type_repas, heure_debut, heure_fin)
- * - reservation(id_reservation, date_creation, date_repas, statut, date_validation, id_service, id_utilisateur)
- *
- * Si vos noms de tables/colonnes diffèrent légèrement dans le repo,
- * adaptez uniquement les requêtes SQL, pas l’API du modèle.
- */
 
 const RESERVATION_STATUS = {
   RESERVED: 'RESERVEE',
@@ -20,10 +6,6 @@ const RESERVATION_STATUS = {
   CANCELED: 'ANNULEE',
 };
 
-/**
- * Recherche une réservation existante pour empêcher les doublons
- * pour un même utilisateur, même service et même date.
- */
 async function findExistingReservation(userId, serviceId, dateRepas) {
   const sql = `
     SELECT
@@ -44,9 +26,6 @@ async function findExistingReservation(userId, serviceId, dateRepas) {
   return rows[0] || null;
 }
 
-/**
- * Récupère les infos d’un service repas.
- */
 async function findServiceById(serviceId) {
   const sql = `
     SELECT
@@ -63,9 +42,6 @@ async function findServiceById(serviceId) {
   return rows[0] || null;
 }
 
-/**
- * Récupère le solde d’un utilisateur.
- */
 async function findUserBalanceById(userId) {
   const sql = `
     SELECT
@@ -80,10 +56,6 @@ async function findUserBalanceById(userId) {
   return rows[0] || null;
 }
 
-/**
- * Variante utile pour transaction :
- * verrouille la ligne utilisateur pendant la transaction.
- */
 async function findUserBalanceByIdForUpdate(connection, userId) {
   const sql = `
     SELECT
@@ -99,10 +71,6 @@ async function findUserBalanceByIdForUpdate(connection, userId) {
   return rows[0] || null;
 }
 
-/**
- * Variante utile pour transaction :
- * vérifie l’existence du doublon pendant la transaction.
- */
 async function findExistingReservationForUpdate(connection, userId, serviceId, dateRepas) {
   const sql = `
     SELECT
@@ -177,9 +145,6 @@ async function createReservation(connection, payload) {
   };
 }
 
-/**
- * Décrémente le solde de l’utilisateur dans une transaction déjà ouverte.
- */
 async function decrementUserBalance(connection, userId, amount) {
   const sql = `
     UPDATE utilisateur
@@ -195,9 +160,6 @@ async function decrementUserBalance(connection, userId, amount) {
   };
 }
 
-/**
- * Historique des réservations de l’utilisateur.
- */
 async function getUserReservations(userId) {
   const sql = `
     SELECT
@@ -224,10 +186,6 @@ async function getUserReservations(userId) {
   return rows;
 }
 
-/**
- * Récupère une réservation précise appartenant à un utilisateur.
- * Sert à l’annulation et aux contrôles de propriété.
- */
 async function findReservationByIdForUser(userId, reservationId) {
   const sql = `
     SELECT
@@ -253,9 +211,6 @@ async function findReservationByIdForUser(userId, reservationId) {
   return rows[0] || null;
 }
 
-/**
- * Variante transactionnelle utile pour annulation.
- */
 async function findReservationByIdForUserForUpdate(connection, userId, reservationId) {
   const sql = `
     SELECT
@@ -282,9 +237,6 @@ async function findReservationByIdForUserForUpdate(connection, userId, reservati
   return rows[0] || null;
 }
 
-/**
- * Passe une réservation au statut ANNULEE dans une transaction déjà ouverte.
- */
 async function cancelReservation(connection, reservationId) {
   const sql = `
     UPDATE reservation
@@ -302,9 +254,6 @@ async function cancelReservation(connection, reservationId) {
   };
 }
 
-/**
- * Expose une connexion transactionnelle au service si besoin.
- */
 async function getConnection() {
   return pool.getConnection();
 }
