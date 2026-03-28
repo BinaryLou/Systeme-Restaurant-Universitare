@@ -1,96 +1,200 @@
-'use strict';
-
 const reservationModel = require('../models/reservationModel');
-
-/**
- * Petit helper d'erreur métier.
- * Si vous avez déjà un AppError dans src/utils/AppError.js,
- * remplace cette classe par un require('../utils/AppError').
- */
-class AppError extends Error {
-  constructor(message, statusCode = 400) {
-    super(message);
-    this.name = 'AppError';
-    this.statusCode = statusCode;
-  }
-}
+const AppError = require('../utils/AppError');
 
 const DEFAULT_MEAL_PRICE = Number(process.env.DEFAULT_MEAL_PRICE || 20);
 const APP_TIMEZONE = process.env.APP_TIMEZONE || 'Africa/Casablanca';
 
-function toDateOnly(dateInput) {
-  const date = new Date(dateInput);
-  if (Number.isNaN(date.getTime())) {
+const DATE_ONLY_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_ONLY_REGEX = /^\d{2}:\d{2}(:\d{2})?$/;
+
+const pad = (value) => String(value).padStart(2, '0');
+
+const isPositiveInteger = (value) => {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0;
+};
+
+const parseDateOnly = (dateStr) => {
+  if (typeof dateStr !== 'string' || !DATE_ONLY_REGEX.test(dateStr.trim())) {
     return null;
   }
 
-  const year = date.getFullYear();
-  const month = `${date.getMonth() + 1}`.padStart(2, '0');
-  const day = `${date.getDate()}`.padStart(2, '0');
+  const cleaned = dateStr.trim();
+  const [year, month, day] = cleaned.split('-').map(Number);
 
-  return `${year}-${month}-${day}`;
-}
+  const date = new Date(year, month - 1, day);
 
-function getTodayDateOnly() {
-  return toDateOnly(new Date());
-}
+  if (
+    Number.isNaN(date.getTime()) ||
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
 
-function addDays(dateStr, daysToAdd) {
-  const date = new Date(`${dateStr}T00:00:00`);
+  return cleaned;
+};
+
+const parseTimeOnly = (timeStr) => {
+  if (typeof timeStr !== 'string' || !TIME_ONLY_REGEX.test(timeStr.trim())) {
+    return null;
+  }
+
+  const cleaned = timeStr.trim();
+  const [hoursStr, minutesStr, secondsStr = '00'] = cleaned.split(':');
+
+  const hours = Number(hoursStr);
+  const minutes = Number(minutesStr);
+  const seconds = Number(secondsStr);
+
+  if (
+    !Number.isInteger(hours) ||
+    !Number.isInteger(minutes) ||
+    !Number.isInteger(seconds) ||
+    hours < 0 || hours > 23 ||
+    minutes < 0 || minutes > 59 ||
+    seconds < 0 || seconds > 59
+  ) {
+    return null;
+  }
+
+  return { hours, minutes, seconds };
+};
+
+const getTodayDateOnly = () => {
+  const now = new Date();
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+};
+
+const addDays = (dateStr, daysToAdd) => {
+  const normalized = parseDateOnly(dateStr);
+  if (!normalized) {
+    return null;
+  }
+
+  const [year, month, day] = normalized.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
   date.setDate(date.getDate() + daysToAdd);
-  return toDateOnly(date);
-}
 
-function combineDateAndTime(dateStr, timeStr) {
-  return new Date(`${dateStr}T${timeStr}`);
-}
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};
 
-function now() {
-  return new Date();
-}
+const combineDateAndTime = (dateStr, timeStr) => {
+  const normalizedDate = parseDateOnly(dateStr);
+  const parsedTime = parseTimeOnly(timeStr);
 
-function isPastDate(dateRepas) {
+  if (!normalizedDate || !parsedTime) {
+    return null;
+  }
+
+  const [year, month, day] = normalizedDate.split('-').map(Number);
+
+  return new Date(
+    year,
+    month - 1,
+    day,
+    parsedTime.hours,
+    parsedTime.minutes,
+    parsedTime.seconds,
+    0
+  );
+};
+
+const now = () => new Date();
+
+const isPastDate = (dateRepas) => {
   const today = getTodayDateOnly();
   return dateRepas < today;
-}
+};
 
-function isBeyondThirtyDays(dateRepas) {
+const isBeyondThirtyDays = (dateRepas) => {
   const maxDate = addDays(getTodayDateOnly(), 30);
   return dateRepas > maxDate;
-}
+};
 
-function isSameDay(dateRepas) {
+const isSameDay = (dateRepas) => {
   return dateRepas === getTodayDateOnly();
-}
+};
 
-function getReservationClosingDateTime(dateRepas, heureDebut) {
+const getReservationClosingDateTime = (dateRepas, heureDebut) => {
   const serviceDateTime = combineDateAndTime(dateRepas, heureDebut);
+
+  if (!serviceDateTime) {
+    throw new AppError('Date ou heure de service invalide.', 500);
+  }
+
   serviceDateTime.setHours(serviceDateTime.getHours() - 12);
   return serviceDateTime;
-}
+};
 
-function getCancellationClosingDateTime(dateRepas, heureDebut) {
+const getCancellationClosingDateTime = (dateRepas, heureDebut) => {
   const serviceDateTime = combineDateAndTime(dateRepas, heureDebut);
+
+  if (!serviceDateTime) {
+    throw new AppError('Date ou heure de service invalide.', 500);
+  }
+
   serviceDateTime.setHours(serviceDateTime.getHours() - 4);
   return serviceDateTime;
-}
+};
 
-function assertServiceExists(service) {
+const assertValidCreateInput = ({ userId, dateRepas, serviceId }) => {
+  if (!isPositiveInteger(userId)) {
+    throw new AppError('Identifiant utilisateur invalide.', 400);
+  }
+
+  if (!isPositiveInteger(serviceId)) {
+    throw new AppError('Identifiant service invalide.', 400);
+  }
+
+  const normalizedDateRepas = parseDateOnly(dateRepas);
+  if (!normalizedDateRepas) {
+    throw new AppError('Date de repas invalide.', 400);
+  }
+
+  return {
+    userId: Number(userId),
+    serviceId: Number(serviceId),
+    dateRepas: normalizedDateRepas,
+  };
+};
+
+const assertValidCancelInput = ({ userId, reservationId }) => {
+  if (!isPositiveInteger(userId)) {
+    throw new AppError('Identifiant utilisateur invalide.', 400);
+  }
+
+  if (!isPositiveInteger(reservationId)) {
+    throw new AppError('Identifiant réservation invalide.', 400);
+  }
+
+  return {
+    userId: Number(userId),
+    reservationId: Number(reservationId),
+  };
+};
+
+const assertServiceExists = (service) => {
   if (!service) {
     throw new AppError('Service introuvable.', 404);
   }
-}
 
-function assertNoDuplicateReservation(existingReservation) {
+  if (!parseTimeOnly(service.heure_debut) || !parseTimeOnly(service.heure_fin)) {
+    throw new AppError('Horaires de service invalides.', 500);
+  }
+};
+
+const assertNoDuplicateReservation = (existingReservation) => {
   if (existingReservation) {
     throw new AppError(
       'Une réservation existe déjà pour cette date et ce service.',
       409
     );
   }
-}
+};
 
-function assertSufficientBalance(user, mealPrice = DEFAULT_MEAL_PRICE) {
+const assertSufficientBalance = (user, mealPrice = DEFAULT_MEAL_PRICE) => {
   if (!user) {
     throw new AppError('Utilisateur introuvable.', 404);
   }
@@ -98,9 +202,9 @@ function assertSufficientBalance(user, mealPrice = DEFAULT_MEAL_PRICE) {
   if (Number(user.solde) < Number(mealPrice)) {
     throw new AppError('Solde insuffisant pour effectuer la réservation.', 400);
   }
-}
+};
 
-function assertReservationWindow(dateRepas) {
+const assertReservationWindow = (dateRepas) => {
   if (isPastDate(dateRepas)) {
     throw new AppError('La date de réservation ne peut pas être passée.', 400);
   }
@@ -108,37 +212,46 @@ function assertReservationWindow(dateRepas) {
   if (isBeyondThirtyDays(dateRepas)) {
     throw new AppError('La réservation est autorisée uniquement entre J et J+30.', 400);
   }
-}
+};
 
-function assertSameDayClosingRule(dateRepas, heureDebut) {
+const assertSameDayClosingRule = (dateRepas, heureDebut) => {
   if (!isSameDay(dateRepas)) {
     return;
   }
 
   const closingDateTime = getReservationClosingDateTime(dateRepas, heureDebut);
+
   if (now() > closingDateTime) {
     throw new AppError(
       'Les réservations du jour sont fermées 12 heures avant le début du service.',
       400
     );
   }
-}
+};
 
-function assertReservationCancelable(reservation) {
+const assertReservationCancelable = (reservation) => {
   if (!reservation) {
     throw new AppError('Réservation introuvable.', 404);
   }
 
   if (reservation.statut === reservationModel.RESERVATION_STATUS.USED) {
-    throw new AppError('Cette réservation a déjà été utilisée et ne peut pas être annulée.', 400);
+    throw new AppError(
+      'Cette réservation a déjà été utilisée et ne peut pas être annulée.',
+      400
+    );
   }
 
   if (reservation.statut === reservationModel.RESERVATION_STATUS.CANCELED) {
     throw new AppError('Cette réservation est déjà annulée.', 400);
   }
 
+  const normalizedDateRepas = parseDateOnly(reservation.date_repas);
+  if (!normalizedDateRepas) {
+    throw new AppError('Date de réservation invalide.', 500);
+  }
+
   const cancellationLimit = getCancellationClosingDateTime(
-    reservation.date_repas,
+    normalizedDateRepas,
     reservation.heure_debut
   );
 
@@ -148,32 +261,20 @@ function assertReservationCancelable(reservation) {
       400
     );
   }
-}
+};
 
-/**
- * Crée une réservation avec transaction :
- * 1. vérifier service
- * 2. vérifier fenêtre J..J+30
- * 3. vérifier clôture H-12 pour le jour même
- * 4. verrouiller solde utilisateur
- * 5. vérifier solde
- * 6. vérifier doublon
- * 7. insérer réservation
- * 8. décrémenter solde
- * 9. commit / rollback
- */
-async function createReservation({ userId, dateRepas, serviceId }) {
-  const normalizedDateRepas = toDateOnly(dateRepas);
+const createReservation = async ({ userId, dateRepas, serviceId }) => {
+  const validatedInput = assertValidCreateInput({
+    userId,
+    dateRepas,
+    serviceId,
+  });
 
-  if (!normalizedDateRepas) {
-    throw new AppError('Date de repas invalide.', 400);
-  }
-
-  const service = await reservationModel.findServiceById(serviceId);
+  const service = await reservationModel.findServiceById(validatedInput.serviceId);
   assertServiceExists(service);
 
-  assertReservationWindow(normalizedDateRepas);
-  assertSameDayClosingRule(normalizedDateRepas, service.heure_debut);
+  assertReservationWindow(validatedInput.dateRepas);
+  assertSameDayClosingRule(validatedInput.dateRepas, service.heure_debut);
 
   const connection = await reservationModel.getConnection();
 
@@ -182,16 +283,16 @@ async function createReservation({ userId, dateRepas, serviceId }) {
 
     const lockedUser = await reservationModel.findUserBalanceByIdForUpdate(
       connection,
-      userId
+      validatedInput.userId
     );
     assertSufficientBalance(lockedUser);
 
     const existingReservation =
       await reservationModel.findExistingReservationForUpdate(
         connection,
-        userId,
-        serviceId,
-        normalizedDateRepas
+        validatedInput.userId,
+        validatedInput.serviceId,
+        validatedInput.dateRepas
       );
 
     assertNoDuplicateReservation(existingReservation);
@@ -199,16 +300,16 @@ async function createReservation({ userId, dateRepas, serviceId }) {
     const createdReservation = await reservationModel.createReservation(
       connection,
       {
-        userId,
-        serviceId,
-        dateRepas: normalizedDateRepas,
+        userId: validatedInput.userId,
+        serviceId: validatedInput.serviceId,
+        dateRepas: validatedInput.dateRepas,
         statut: reservationModel.RESERVATION_STATUS.RESERVED,
       }
     );
 
     const balanceUpdate = await reservationModel.decrementUserBalance(
       connection,
-      userId,
+      validatedInput.userId,
       DEFAULT_MEAL_PRICE
     );
 
@@ -218,7 +319,7 @@ async function createReservation({ userId, dateRepas, serviceId }) {
 
     await connection.commit();
 
-    const updatedUser = await reservationModel.findUserBalanceById(userId);
+    const updatedUser = await reservationModel.findUserBalanceById(validatedInput.userId);
 
     return {
       reservation: {
@@ -245,31 +346,28 @@ async function createReservation({ userId, dateRepas, serviceId }) {
   } finally {
     connection.release();
   }
-}
+};
 
-/**
- * Retourne l’historique des réservations de l’utilisateur.
- */
-async function getMyReservations(userId) {
-  const reservations = await reservationModel.getUserReservations(userId);
+const getMyReservations = async (userId) => {
+  if (!isPositiveInteger(userId)) {
+    throw new AppError('Identifiant utilisateur invalide.', 400);
+  }
+
+  const reservations = await reservationModel.getUserReservations(Number(userId));
 
   return {
     items: reservations,
     count: reservations.length,
+    timezone: APP_TIMEZONE,
   };
-}
+};
 
-/**
- * Annule une réservation si :
- * - elle existe
- * - elle appartient à l’utilisateur
- * - elle n’est ni utilisée ni déjà annulée
- * - le délai H-4 est respecté
- *
- * Par défaut ici : pas de remboursement.
- * Si votre équipe décide de rembourser, ce sera à ajouter ici.
- */
-async function cancelMyReservation({ userId, reservationId }) {
+const cancelMyReservation = async ({ userId, reservationId }) => {
+  const validatedInput = assertValidCancelInput({
+    userId,
+    reservationId,
+  });
+
   const connection = await reservationModel.getConnection();
 
   try {
@@ -278,15 +376,15 @@ async function cancelMyReservation({ userId, reservationId }) {
     const reservation =
       await reservationModel.findReservationByIdForUserForUpdate(
         connection,
-        userId,
-        reservationId
+        validatedInput.userId,
+        validatedInput.reservationId
       );
 
     assertReservationCancelable(reservation);
 
     const result = await reservationModel.cancelReservation(
       connection,
-      reservationId
+      validatedInput.reservationId
     );
 
     if (result.affectedRows !== 1) {
@@ -296,9 +394,10 @@ async function cancelMyReservation({ userId, reservationId }) {
     await connection.commit();
 
     return {
-      id_reservation: Number(reservationId),
+      id_reservation: validatedInput.reservationId,
       statut: reservationModel.RESERVATION_STATUS.CANCELED,
       refunded: false,
+      timezone: APP_TIMEZONE,
     };
   } catch (error) {
     await connection.rollback();
@@ -306,11 +405,10 @@ async function cancelMyReservation({ userId, reservationId }) {
   } finally {
     connection.release();
   }
-}
+};
 
 module.exports = {
   createReservation,
   getMyReservations,
   cancelMyReservation,
-  AppError,
 };
