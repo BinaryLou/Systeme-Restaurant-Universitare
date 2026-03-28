@@ -61,8 +61,8 @@ const parseTimeOnly = (timeStr) => {
 const pad = (value) => String(value).padStart(2, '0');
 
 const getTodayDateOnly = () => {
-  const now = new Date();
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  const current = new Date();
+  return `${current.getFullYear()}-${pad(current.getMonth() + 1)}-${pad(current.getDate())}`;
 };
 
 const addDays = (dateStr, daysToAdd) => {
@@ -228,30 +228,70 @@ const createReservation = async ({ userId, dateRepas, serviceId }) => {
   assertReservationWindow(validatedInput.dateRepas);
   assertSameDayClosingRule(validatedInput.dateRepas, service.heure_debut);
 
-  const existingReservation = await reservationModel.findExistingReservation(
-    validatedInput.userId,
-    validatedInput.serviceId,
-    validatedInput.dateRepas
-  );
-  assertNoDuplicateReservation(existingReservation);
+  const connection = await reservationModel.getConnection();
 
-  const user = await reservationModel.findUserBalanceById(validatedInput.userId);
-  assertSufficientBalance(user);
+  try {
+    await connection.beginTransaction();
 
-  return {
-    canReserve: true,
-    userId: validatedInput.userId,
-    serviceId: validatedInput.serviceId,
-    dateRepas: validatedInput.dateRepas,
-    mealPrice: DEFAULT_MEAL_PRICE,
-    timezone: APP_TIMEZONE,
-    service: {
-      id_service: service.id_service,
-      type_repas: service.type_repas,
-      heure_debut: service.heure_debut,
-      heure_fin: service.heure_fin,
-    },
-  };
+    const lockedUser = await reservationModel.findUserBalanceByIdForUpdate(
+      connection,
+      validatedInput.userId
+    );
+    assertSufficientBalance(lockedUser);
+
+    const existingReservation = await reservationModel.findExistingReservationForUpdate(
+      connection,
+      validatedInput.userId,
+      validatedInput.serviceId,
+      validatedInput.dateRepas
+    );
+    assertNoDuplicateReservation(existingReservation);
+
+    const createdReservation = await reservationModel.createReservation(connection, {
+      userId: validatedInput.userId,
+      serviceId: validatedInput.serviceId,
+      dateRepas: validatedInput.dateRepas,
+      statut: reservationModel.RESERVATION_STATUS.RESERVED,
+    });
+
+    const balanceUpdateResult = await reservationModel.decrementUserBalance(
+      connection,
+      validatedInput.userId,
+      DEFAULT_MEAL_PRICE
+    );
+
+    if (!balanceUpdateResult || balanceUpdateResult.affectedRows !== 1) {
+      throw new AppError('Impossible de mettre à jour le solde utilisateur.', 500);
+    }
+
+    await connection.commit();
+
+    return {
+      reservation: createdReservation,
+      mealPrice: DEFAULT_MEAL_PRICE,
+      remainingBalance: Number(lockedUser.solde) - Number(DEFAULT_MEAL_PRICE),
+      timezone: APP_TIMEZONE,
+      service: {
+        id_service: service.id_service,
+        type_repas: service.type_repas,
+        heure_debut: service.heure_debut,
+        heure_fin: service.heure_fin,
+      },
+    };
+  } catch (error) {
+    await connection.rollback();
+
+    if (error && error.code === 'ER_DUP_ENTRY') {
+      throw new AppError(
+        'Une réservation existe déjà pour cette date et ce service.',
+        409
+      );
+    }
+
+    throw error;
+  } finally {
+    connection.release();
+  }
 };
 
 const getMyReservations = async (userId) => {
