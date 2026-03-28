@@ -6,9 +6,6 @@ const userLogin = async (req, res, next) => {
     const { apogee, password } = req.body;
 
     const result = await loginUser({ apogee, password });
-    console.log(result) //
-    console.log(result.tokens);
-    console.log(result.tokens?.refreshToken);
     res.cookie("refreshToken", result.tokens.refreshToken, {
       httpOnly: true,
       secure: false, // true en production
