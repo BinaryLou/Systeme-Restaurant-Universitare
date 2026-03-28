@@ -1,13 +1,9 @@
 const reservationModel = require('../models/reservationModel');
 const AppError = require('../utils/AppError');
 
-const DEFAULT_MEAL_PRICE = Number(process.env.DEFAULT_MEAL_PRICE || 20);
 const APP_TIMEZONE = process.env.APP_TIMEZONE || 'Africa/Casablanca';
-
 const DATE_ONLY_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_ONLY_REGEX = /^\d{2}:\d{2}(:\d{2})?$/;
-
-const pad = (value) => String(value).padStart(2, '0');
 
 const isPositiveInteger = (value) => {
   const parsed = Number(value);
@@ -21,7 +17,6 @@ const parseDateOnly = (dateStr) => {
 
   const cleaned = dateStr.trim();
   const [year, month, day] = cleaned.split('-').map(Number);
-
   const date = new Date(year, month - 1, day);
 
   if (
@@ -60,83 +55,6 @@ const parseTimeOnly = (timeStr) => {
   }
 
   return { hours, minutes, seconds };
-};
-
-const getTodayDateOnly = () => {
-  const now = new Date();
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-};
-
-const addDays = (dateStr, daysToAdd) => {
-  const normalized = parseDateOnly(dateStr);
-  if (!normalized) {
-    return null;
-  }
-
-  const [year, month, day] = normalized.split('-').map(Number);
-  const date = new Date(year, month - 1, day);
-  date.setDate(date.getDate() + daysToAdd);
-
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-};
-
-const combineDateAndTime = (dateStr, timeStr) => {
-  const normalizedDate = parseDateOnly(dateStr);
-  const parsedTime = parseTimeOnly(timeStr);
-
-  if (!normalizedDate || !parsedTime) {
-    return null;
-  }
-
-  const [year, month, day] = normalizedDate.split('-').map(Number);
-
-  return new Date(
-    year,
-    month - 1,
-    day,
-    parsedTime.hours,
-    parsedTime.minutes,
-    parsedTime.seconds,
-    0
-  );
-};
-
-const now = () => new Date();
-
-const isPastDate = (dateRepas) => {
-  const today = getTodayDateOnly();
-  return dateRepas < today;
-};
-
-const isBeyondThirtyDays = (dateRepas) => {
-  const maxDate = addDays(getTodayDateOnly(), 30);
-  return dateRepas > maxDate;
-};
-
-const isSameDay = (dateRepas) => {
-  return dateRepas === getTodayDateOnly();
-};
-
-const getReservationClosingDateTime = (dateRepas, heureDebut) => {
-  const serviceDateTime = combineDateAndTime(dateRepas, heureDebut);
-
-  if (!serviceDateTime) {
-    throw new AppError('Date ou heure de service invalide.', 500);
-  }
-
-  serviceDateTime.setHours(serviceDateTime.getHours() - 12);
-  return serviceDateTime;
-};
-
-const getCancellationClosingDateTime = (dateRepas, heureDebut) => {
-  const serviceDateTime = combineDateAndTime(dateRepas, heureDebut);
-
-  if (!serviceDateTime) {
-    throw new AppError('Date ou heure de service invalide.', 500);
-  }
-
-  serviceDateTime.setHours(serviceDateTime.getHours() - 4);
-  return serviceDateTime;
 };
 
 const assertValidCreateInput = ({ userId, dateRepas, serviceId }) => {
@@ -185,84 +103,6 @@ const assertServiceExists = (service) => {
   }
 };
 
-const assertNoDuplicateReservation = (existingReservation) => {
-  if (existingReservation) {
-    throw new AppError(
-      'Une réservation existe déjà pour cette date et ce service.',
-      409
-    );
-  }
-};
-
-const assertSufficientBalance = (user, mealPrice = DEFAULT_MEAL_PRICE) => {
-  if (!user) {
-    throw new AppError('Utilisateur introuvable.', 404);
-  }
-
-  if (Number(user.solde) < Number(mealPrice)) {
-    throw new AppError('Solde insuffisant pour effectuer la réservation.', 400);
-  }
-};
-
-const assertReservationWindow = (dateRepas) => {
-  if (isPastDate(dateRepas)) {
-    throw new AppError('La date de réservation ne peut pas être passée.', 400);
-  }
-
-  if (isBeyondThirtyDays(dateRepas)) {
-    throw new AppError('La réservation est autorisée uniquement entre J et J+30.', 400);
-  }
-};
-
-const assertSameDayClosingRule = (dateRepas, heureDebut) => {
-  if (!isSameDay(dateRepas)) {
-    return;
-  }
-
-  const closingDateTime = getReservationClosingDateTime(dateRepas, heureDebut);
-
-  if (now() > closingDateTime) {
-    throw new AppError(
-      'Les réservations du jour sont fermées 12 heures avant le début du service.',
-      400
-    );
-  }
-};
-
-const assertReservationCancelable = (reservation) => {
-  if (!reservation) {
-    throw new AppError('Réservation introuvable.', 404);
-  }
-
-  if (reservation.statut === reservationModel.RESERVATION_STATUS.USED) {
-    throw new AppError(
-      'Cette réservation a déjà été utilisée et ne peut pas être annulée.',
-      400
-    );
-  }
-
-  if (reservation.statut === reservationModel.RESERVATION_STATUS.CANCELED) {
-    throw new AppError('Cette réservation est déjà annulée.', 400);
-  }
-
-  const normalizedDateRepas = parseDateOnly(reservation.date_repas);
-  if (!normalizedDateRepas) {
-    throw new AppError('Date de réservation invalide.', 500);
-  }
-
-  const cancellationLimit = getCancellationClosingDateTime(
-    normalizedDateRepas,
-    reservation.heure_debut
-  );
-
-  if (now() > cancellationLimit) {
-    throw new AppError(
-      'L’annulation est impossible moins de 4 heures avant le début du service.',
-      400
-    );
-  }
-};
-
 const createReservation = async ({ userId, dateRepas, serviceId }) => {
   const validatedInput = assertValidCreateInput({
     userId,
@@ -273,79 +113,10 @@ const createReservation = async ({ userId, dateRepas, serviceId }) => {
   const service = await reservationModel.findServiceById(validatedInput.serviceId);
   assertServiceExists(service);
 
-  assertReservationWindow(validatedInput.dateRepas);
-  assertSameDayClosingRule(validatedInput.dateRepas, service.heure_debut);
-
-  const connection = await reservationModel.getConnection();
-
-  try {
-    await connection.beginTransaction();
-
-    const lockedUser = await reservationModel.findUserBalanceByIdForUpdate(
-      connection,
-      validatedInput.userId
-    );
-    assertSufficientBalance(lockedUser);
-
-    const existingReservation =
-      await reservationModel.findExistingReservationForUpdate(
-        connection,
-        validatedInput.userId,
-        validatedInput.serviceId,
-        validatedInput.dateRepas
-      );
-
-    assertNoDuplicateReservation(existingReservation);
-
-    const createdReservation = await reservationModel.createReservation(
-      connection,
-      {
-        userId: validatedInput.userId,
-        serviceId: validatedInput.serviceId,
-        dateRepas: validatedInput.dateRepas,
-        statut: reservationModel.RESERVATION_STATUS.RESERVED,
-      }
-    );
-
-    const balanceUpdate = await reservationModel.decrementUserBalance(
-      connection,
-      validatedInput.userId,
-      DEFAULT_MEAL_PRICE
-    );
-
-    if (balanceUpdate.affectedRows !== 1) {
-      throw new AppError('Impossible de mettre à jour le solde utilisateur.', 500);
-    }
-
-    await connection.commit();
-
-    const updatedUser = await reservationModel.findUserBalanceById(validatedInput.userId);
-
-    return {
-      reservation: {
-        ...createdReservation,
-        type_repas: service.type_repas,
-        heure_debut: service.heure_debut,
-        heure_fin: service.heure_fin,
-      },
-      balance: updatedUser ? updatedUser.solde : null,
-      mealPrice: DEFAULT_MEAL_PRICE,
-      timezone: APP_TIMEZONE,
-    };
-  } catch (error) {
-    await connection.rollback();
-
-    if (error && error.code === 'ER_DUP_ENTRY') {
-      throw new AppError(
-        'Une réservation existe déjà pour cette date et ce service.',
-        409
-      );
-    }
-
-    throw error;
-  } finally {
-    connection.release();
-  }
+  throw new AppError(
+    'createReservation est prêt côté service layer, mais doit être complété par S3-04 et S3-05.',
+    501
+  );
 };
 
 const getMyReservations = async (userId) => {
@@ -368,43 +139,19 @@ const cancelMyReservation = async ({ userId, reservationId }) => {
     reservationId,
   });
 
-  const connection = await reservationModel.getConnection();
+  const reservation = await reservationModel.findReservationByIdForUser(
+    validatedInput.userId,
+    validatedInput.reservationId
+  );
 
-  try {
-    await connection.beginTransaction();
-
-    const reservation =
-      await reservationModel.findReservationByIdForUserForUpdate(
-        connection,
-        validatedInput.userId,
-        validatedInput.reservationId
-      );
-
-    assertReservationCancelable(reservation);
-
-    const result = await reservationModel.cancelReservation(
-      connection,
-      validatedInput.reservationId
-    );
-
-    if (result.affectedRows !== 1) {
-      throw new AppError('Impossible d’annuler la réservation.', 500);
-    }
-
-    await connection.commit();
-
-    return {
-      id_reservation: validatedInput.reservationId,
-      statut: reservationModel.RESERVATION_STATUS.CANCELED,
-      refunded: false,
-      timezone: APP_TIMEZONE,
-    };
-  } catch (error) {
-    await connection.rollback();
-    throw error;
-  } finally {
-    connection.release();
+  if (!reservation) {
+    throw new AppError('Réservation introuvable.', 404);
   }
+
+  throw new AppError(
+    'cancelMyReservation est prêt côté service layer, mais doit être complété par S3-09.',
+    501
+  );
 };
 
 module.exports = {
