@@ -9,12 +9,10 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js"
-   
   },
   "devDependencies": {
     "jest": "^30.3.0",
     "nodemon": "^3.1.14"
-    
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
