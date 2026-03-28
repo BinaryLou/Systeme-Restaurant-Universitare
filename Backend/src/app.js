@@ -19,6 +19,7 @@ app.use("/admin", require("./routes/admin"));
 //Real Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/services", require("./routes/services"));
+app.use('/api/reservations', require('./routes/reservations'));
 
 
 app.use((req, res) => {
