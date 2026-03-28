@@ -308,29 +308,106 @@ const getMyReservations = async (userId) => {
   };
 };
 
+const getCancellationDeadlineDateTime = (dateRepas, heureDebut) => {
+  const serviceDateTime = combineDateAndTime(dateRepas, heureDebut);
+
+  if (!serviceDateTime) {
+    throw new AppError('Date ou heure de service invalide.', 500);
+  }
+
+  serviceDateTime.setHours(serviceDateTime.getHours() - 4);
+  return serviceDateTime;
+};
+
+const assertReservationCancelable = (reservation) => {
+  if (!reservation) {
+    throw new AppError('Réservation introuvable.', 404);
+  }
+
+  if (reservation.statut === reservationModel.RESERVATION_STATUS.USED) {
+    throw new AppError(
+      'Impossible d’annuler une réservation déjà utilisée.',
+      400
+    );
+  }
+
+  if (reservation.statut === reservationModel.RESERVATION_STATUS.CANCELED) {
+    throw new AppError(
+      'Cette réservation est déjà annulée.',
+      400
+    );
+  }
+};
+
+const assertCancellationDeadline = (reservation) => {
+  const cancellationDeadline = getCancellationDeadlineDateTime(
+    reservation.date_repas,
+    reservation.heure_debut
+  );
+
+  if (now() > cancellationDeadline) {
+    throw new AppError(
+      'L’annulation est autorisée jusqu’à 4 heures avant le début du service.',
+      400
+    );
+  }
+};
+
 const cancelMyReservation = async ({ userId, reservationId }) => {
   const validatedInput = assertValidCancelInput({
     userId,
     reservationId,
   });
 
-  const reservation = await reservationModel.findReservationByIdForUser(
-    validatedInput.userId,
-    validatedInput.reservationId
-  );
+  const connection = await reservationModel.getConnection();
 
-  if (!reservation) {
-    throw new AppError('Réservation introuvable.', 404);
+  try {
+    await connection.beginTransaction();
+
+    const reservation = await reservationModel.findReservationByIdForUserForUpdate(
+      connection,
+      validatedInput.userId,
+      validatedInput.reservationId
+    );
+
+    assertReservationCancelable(reservation);
+    assertCancellationDeadline(reservation);
+
+    const cancelResult = await reservationModel.cancelReservation(
+      connection,
+      validatedInput.reservationId
+    );
+
+    if (!cancelResult || cancelResult.affectedRows !== 1) {
+      throw new AppError('Impossible d’annuler la réservation.', 500);
+    }
+
+    await connection.commit();
+
+    return {
+      reservation: {
+        id_reservation: reservation.id_reservation,
+        date_repas: reservation.date_repas,
+        id_service: reservation.id_service,
+        type_repas: reservation.type_repas,
+        heure_debut: reservation.heure_debut,
+        heure_fin: reservation.heure_fin,
+        statut: reservationModel.RESERVATION_STATUS.CANCELED,
+      },
+      refunded: false,
+      timezone: APP_TIMEZONE,
+    };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
   }
-
-  throw new AppError(
-    'cancelMyReservation est prêt côté service layer, mais doit être complété par S3-09.',
-    501
-  );
 };
 
 module.exports = {
   createReservation,
   getMyReservations,
+  getCancellationDeadlineDateTime,
   cancelMyReservation,
 };
