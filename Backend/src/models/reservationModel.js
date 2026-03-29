@@ -319,6 +319,57 @@ async function markReservationAsUsed(reservationId) {
   };
 }
 
+async function findTodayReservationByUserAndServiceForUpdate(
+  connection,
+  userId,
+  serviceId,
+  dateRepas
+) {
+  const sql = `
+    SELECT
+      r.id_reservation,
+      r.date_creation,
+      r.date_repas,
+      r.statut,
+      r.date_validation,
+      r.id_service,
+      r.id_utilisateur,
+      s.type_repas,
+      s.heure_debut,
+      s.heure_fin
+    FROM reservation r
+    INNER JOIN service_repas s
+      ON s.id_service = r.id_service
+    WHERE r.id_utilisateur = ?
+      AND r.id_service = ?
+      AND r.date_repas = ?
+    LIMIT 1
+    FOR UPDATE
+  `;
+
+  const [rows] = await connection.execute(sql, [userId, serviceId, dateRepas]);
+  return rows[0] || null;
+}
+
+async function markReservationAsUsedWithConnection(connection, reservationId) {
+  const sql = `
+    UPDATE reservation
+    SET
+      statut = ?,
+      date_validation = NOW()
+    WHERE id_reservation = ?
+  `;
+
+  const [result] = await connection.execute(sql, [
+    RESERVATION_STATUS.USED,
+    reservationId,
+  ]);
+
+  return {
+    affectedRows: result.affectedRows,
+  };
+}
+
 module.exports = {
   RESERVATION_STATUS,
   getConnection,
@@ -336,4 +387,6 @@ module.exports = {
   findCurrentServiceByTime,
   findTodayReservationByUserAndService,
   markReservationAsUsed,
+  findTodayReservationByUserAndServiceForUpdate,
+  markReservationAsUsedWithConnection,
 };
