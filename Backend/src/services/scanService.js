@@ -56,63 +56,80 @@ const processScanQrCode = async ({ qrCode }) => {
     throw new AppError('Aucun service actif pour le moment.', 400);
   }
 
-  const reservation = await reservationModel.findTodayReservationByUserAndService(
-    user.id_utilisateur,
-    currentService.id_service,
-    dateOnly
-  );
+  const connection = await reservationModel.getConnection();
 
-  if (!reservation) {
-    throw new AppError('Aucune réservation valide trouvée pour aujourd’hui.', 404);
+  try {
+    await connection.beginTransaction();
+
+    const reservation =
+      await reservationModel.findTodayReservationByUserAndServiceForUpdate(
+        connection,
+        user.id_utilisateur,
+        currentService.id_service,
+        dateOnly
+      );
+
+    if (!reservation) {
+      throw new AppError('Aucune réservation valide trouvée pour aujourd’hui.', 404);
+    }
+
+    if (reservation.statut === reservationModel.RESERVATION_STATUS.USED) {
+      throw new AppError('Ticket déjà utilisé.', 409);
+    }
+
+    if (reservation.statut === reservationModel.RESERVATION_STATUS.CANCELED) {
+      throw new AppError('Cette réservation est annulée.', 400);
+    }
+
+    if (reservation.statut !== reservationModel.RESERVATION_STATUS.RESERVED) {
+      throw new AppError('Statut de réservation invalide pour le scan.', 400);
+    }
+
+    const updateResult =
+      await reservationModel.markReservationAsUsedWithConnection(
+        connection,
+        reservation.id_reservation
+      );
+
+    if (!updateResult || updateResult.affectedRows !== 1) {
+      throw new AppError('Impossible de valider le ticket.', 500);
+    }
+
+    await connection.commit();
+
+    return {
+      user: {
+        id_utilisateur: user.id_utilisateur,
+        apogee: user.apogee,
+        nom: user.nom,
+        prenom: user.prenom,
+        email: user.email,
+      },
+      service: {
+        id_service: currentService.id_service,
+        type_repas: currentService.type_repas,
+        heure_debut: currentService.heure_debut,
+        heure_fin: currentService.heure_fin,
+      },
+      reservation: {
+        id_reservation: reservation.id_reservation,
+        date_repas: reservation.date_repas,
+        statut_avant_validation: reservation.statut,
+        statut: reservationModel.RESERVATION_STATUS.USED,
+        date_validation: new Date().toISOString(),
+      },
+      scan_context: {
+        scanned_at_date: dateOnly,
+        scanned_at_time: timeOnly,
+        timezone: APP_TIMEZONE,
+      },
+    };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
   }
-
-  if (reservation.statut === reservationModel.RESERVATION_STATUS.USED) {
-    throw new AppError('Ticket déjà utilisé.', 409);
-  }
-
-  if (reservation.statut === reservationModel.RESERVATION_STATUS.CANCELED) {
-    throw new AppError('Cette réservation est annulée.', 400);
-  }
-
-  if (reservation.statut !== reservationModel.RESERVATION_STATUS.RESERVED) {
-    throw new AppError('Statut de réservation invalide pour le scan.', 400);
-  }
-
-  const updateResult = await reservationModel.markReservationAsUsed(
-    reservation.id_reservation
-  );
-
-  if (!updateResult || updateResult.affectedRows !== 1) {
-    throw new AppError('Impossible de valider le ticket.', 500);
-  }
-
-  return {
-    user: {
-      id_utilisateur: user.id_utilisateur,
-      apogee: user.apogee,
-      nom: user.nom,
-      prenom: user.prenom,
-      email: user.email,
-    },
-    service: {
-      id_service: currentService.id_service,
-      type_repas: currentService.type_repas,
-      heure_debut: currentService.heure_debut,
-      heure_fin: currentService.heure_fin,
-    },
-    reservation: {
-      id_reservation: reservation.id_reservation,
-      date_repas: reservation.date_repas,
-      statut_avant_validation: reservation.statut,
-      statut: reservationModel.RESERVATION_STATUS.USED,
-      date_validation: new Date().toISOString(),
-    },
-    scan_context: {
-      scanned_at_date: dateOnly,
-      scanned_at_time: timeOnly,
-      timezone: APP_TIMEZONE,
-    },
-  };
 };
 
 module.exports = {
