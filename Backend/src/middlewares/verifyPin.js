@@ -12,7 +12,6 @@ const verifyPin = (req, res, next) => {
   }
 
   return next();
-  next();
 };
 
 module.exports = verifyPin;
