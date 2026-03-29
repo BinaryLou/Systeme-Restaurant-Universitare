@@ -300,6 +300,25 @@ async function findTodayReservationByUserAndService(userId, serviceId, dateRepas
   return rows[0] || null;
 }
 
+async function markReservationAsUsed(reservationId) {
+  const sql = `
+    UPDATE reservation
+    SET
+      statut = ?,
+      date_validation = NOW()
+    WHERE id_reservation = ?
+  `;
+
+  const [result] = await pool.execute(sql, [
+    RESERVATION_STATUS.USED,
+    reservationId,
+  ]);
+
+  return {
+    affectedRows: result.affectedRows,
+  };
+}
+
 module.exports = {
   RESERVATION_STATUS,
   getConnection,
@@ -316,4 +335,5 @@ module.exports = {
   cancelReservation,
   findCurrentServiceByTime,
   findTodayReservationByUserAndService,
+  markReservationAsUsed,
 };
