@@ -78,6 +78,14 @@ const processScanQrCode = async ({ qrCode }) => {
     throw new AppError('Statut de réservation invalide pour le scan.', 400);
   }
 
+  const updateResult = await reservationModel.markReservationAsUsed(
+    reservation.id_reservation
+  );
+
+  if (!updateResult || updateResult.affectedRows !== 1) {
+    throw new AppError('Impossible de valider le ticket.', 500);
+  }
+
   return {
     user: {
       id_utilisateur: user.id_utilisateur,
@@ -95,8 +103,9 @@ const processScanQrCode = async ({ qrCode }) => {
     reservation: {
       id_reservation: reservation.id_reservation,
       date_repas: reservation.date_repas,
-      statut: reservation.statut,
-      date_validation: reservation.date_validation,
+      statut_avant_validation: reservation.statut,
+      statut: reservationModel.RESERVATION_STATUS.USED,
+      date_validation: new Date().toISOString(),
     },
     scan_context: {
       scanned_at_date: dateOnly,
