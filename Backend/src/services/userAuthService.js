@@ -2,7 +2,7 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 
 const { signAccessToken, signRefreshToken } = require("../utils/jwt");
-const { findUserByApogee } = require("../models/userModel");
+const { findUserByApogee ,findUserById ,findUserByQrCode } = require("../models/userModel");
 const { createRefreshToken } = require("../models/refreshTokenModel");
 const AppError = require("../utils/AppError");
 
@@ -58,6 +58,8 @@ const loginUser = async ({ apogee, password }) => {
       nom: user.nom,
       prenom: user.prenom,
       email: user.email,
+      solde: user.solde,
+      code_qr: user.code_qr,
       role: "USER",
     },
     tokens: {
