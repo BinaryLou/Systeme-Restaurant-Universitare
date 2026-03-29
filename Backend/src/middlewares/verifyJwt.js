@@ -28,6 +28,7 @@ const verifyJwt = (req, res, next) => {
 
     return next();
   } catch (e) {
+    console.error("VERIFY JWT ERROR:", e.message);
     return next(new AppError("Invalid or expired token", 401));
   }
 };

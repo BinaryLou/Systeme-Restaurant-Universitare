@@ -23,6 +23,9 @@ app.use("/api/services", require("./routes/services"));
 app.use("/api/reservations", require("./routes/reservations"));
 app.use("/api/scan", require("./routes/scan"));
 
+app.use('/api/reservations', require('./routes/reservations'));
+app.use("/api/scan", require("./routes/scan"));
+app.use("/api/users", require("./routes/users"));
 
 app.use((req, res) => {
   throw new AppError(`Route ${req.originalUrl} not found`, 404);

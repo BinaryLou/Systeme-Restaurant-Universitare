@@ -32,6 +32,7 @@ const scanAccessController = (req, res, next) => {
     });
   } catch (error) {
     return next(error);
+    next(error);
   }
 };
 

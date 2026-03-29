@@ -4,6 +4,7 @@ const {
   scanAccessController,
   scanQrCode,
 } = require("../controllers/scanController");
+const { scanAccessController } = require("../controllers/scanController");
 
 const router = express.Router();
 
