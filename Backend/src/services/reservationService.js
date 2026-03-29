@@ -11,12 +11,16 @@ const isPositiveInteger = (value) => {
   return Number.isInteger(parsed) && parsed > 0;
 };
 
-const parseDateOnly = (dateStr) => {
-  if (typeof dateStr !== 'string' || !DATE_ONLY_REGEX.test(dateStr.trim())) {
+const parseDateOnly = (dateValue) => {
+  if (dateValue instanceof Date && !Number.isNaN(dateValue.getTime())) {
+    return `${dateValue.getFullYear()}-${pad(dateValue.getMonth() + 1)}-${pad(dateValue.getDate())}`;
+  }
+
+  if (typeof dateValue !== 'string' || !DATE_ONLY_REGEX.test(dateValue.trim())) {
     return null;
   }
 
-  const cleaned = dateStr.trim();
+  const cleaned = dateValue.trim();
   const [year, month, day] = cleaned.split('-').map(Number);
   const date = new Date(year, month - 1, day);
 
