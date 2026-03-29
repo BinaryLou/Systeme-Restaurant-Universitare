@@ -11,6 +11,7 @@ const verifyPin = (req, res, next) => {
     return next(new AppError("PIN invalide", 403));
   }
 
+  return next();
   next();
 };
 

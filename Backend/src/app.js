@@ -16,9 +16,13 @@ app.use("/health", require("./routes/health"));
 app.use("/protected", require("./routes/protected"));
 app.use("/admin", require("./routes/admin"));
 
-//Real Routes
+
+// Real Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/services", require("./routes/services"));
+app.use("/api/reservations", require("./routes/reservations"));
+app.use("/api/scan", require("./routes/scan"));
+
 app.use('/api/reservations', require('./routes/reservations'));
 app.use("/api/scan", require("./routes/scan"));
 app.use("/api/users", require("./routes/users"));
