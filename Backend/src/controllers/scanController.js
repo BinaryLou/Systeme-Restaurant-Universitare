@@ -1,4 +1,5 @@
 const AppError = require("../utils/AppError");
+const { sendSuccess } = require("../utils/apiResponse");
 const { processScanQrCode } = require("../services/scanService");
 
 const scanQrCode = async (req, res, next) => {
@@ -13,11 +14,7 @@ const scanQrCode = async (req, res, next) => {
       qrCode: qrCode.trim(),
     });
 
-    return res.status(200).json({
-      status: "success",
-      data: result,
-      message: "Scan effectué avec succès",
-    });
+    return sendSuccess(res, result, "Scan effectué avec succès", 200);
   } catch (error) {
     return next(error);
   }
@@ -25,14 +22,9 @@ const scanQrCode = async (req, res, next) => {
 
 const scanAccessController = (req, res, next) => {
   try {
-    return res.status(200).json({
-      status: "success",
-      data: {},
-      message: "Accès au scan autorisé",
-    });
+    return sendSuccess(res, {}, "Accès au scan autorisé", 200);
   } catch (error) {
     return next(error);
-    next(error);
   }
 };
 

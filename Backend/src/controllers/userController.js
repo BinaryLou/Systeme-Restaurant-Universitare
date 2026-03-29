@@ -1,16 +1,14 @@
+const { sendSuccess } = require("../utils/apiResponse");
 const { getMyQrCode } = require("../services/userService");
 
 const getMyQrCodeController = async (req, res, next) => {
   try {
-    const result = await getMyQrCode(req.user.id);
+    const userId = req.user.id_utilisateur || req.user.id;
+    const result = await getMyQrCode(userId);
 
-    return res.status(200).json({
-      status: "success",
-      data: result,
-      message: "QR récupéré avec succès",
-    });
+    return sendSuccess(res, result, "QR récupéré avec succès", 200);
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 

@@ -99,7 +99,7 @@ async function findExistingReservationForUpdate(connection, userId, serviceId, d
  *   userId: number,
  *   serviceId: number,
  *   dateRepas: 'YYYY-MM-DD',
- *   statut?: 'RESERVEE'
+ *   statut?: 'EN_ATTENTE'
  * }
  */
 async function createReservation(connection, payload) {
@@ -258,25 +258,62 @@ async function getConnection() {
   return pool.getConnection();
 }
 
+async function findCurrentServiceByTime(currentTime) {
+  const sql = `
+    SELECT 
+      s.id_service,
+      s.type_repas,
+      s.heure_debut,
+      s.heure_fin
+    FROM service_repas s
+    WHERE ? BETWEEN s.heure_debut AND s.heure_fin
+    LIMIT 1
+  `;
+
+  const [rows] = await pool.execute(sql, [currentTime]);
+  return rows[0] || null;
+}
+
+async function findTodayReservationByUserAndService(userId, serviceId, dateRepas) {
+  const sql = `
+    SELECT
+      r.id_reservation,
+      r.date_creation,
+      r.date_repas,
+      r.statut,
+      r.date_validation,
+      r.id_service,
+      r.id_utilisateur,
+      s.type_repas,
+      s.heure_debut,
+      s.heure_fin
+    FROM reservation r
+    INNER JOIN service_repas s
+      ON s.id_service = r.id_service
+    WHERE r.id_utilisateur = ?
+      AND r.id_service = ?
+      AND r.date_repas = ?
+    LIMIT 1
+  `;
+
+  const [rows] = await pool.execute(sql, [userId, serviceId, dateRepas]);
+  return rows[0] || null;
+}
+
 module.exports = {
   RESERVATION_STATUS,
   getConnection,
-
   findExistingReservation,
   findExistingReservationForUpdate,
-
   findServiceById,
-
   findUserBalanceById,
   findUserBalanceByIdForUpdate,
-
   createReservation,
   decrementUserBalance,
-
   getUserReservations,
-
   findReservationByIdForUser,
   findReservationByIdForUserForUpdate,
-
   cancelReservation,
+  findCurrentServiceByTime,
+  findTodayReservationByUserAndService,
 };
