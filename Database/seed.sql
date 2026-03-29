@@ -1,7 +1,6 @@
 USE ru_ticket;
 
 -- UTILISATEURS
-
 INSERT INTO utilisateur
 (nom, prenom, email, apogee, mot_de_passe_hash, solde, code_qr)
 VALUES
@@ -34,7 +33,6 @@ VALUES
 );
 
 -- ADMINISTRATEUR
-
 INSERT INTO administrateur
 (nom, prenom, email, mot_de_passe_hash)
 VALUES
@@ -45,30 +43,24 @@ VALUES
   '$2b$10$KhmaLc6B90AbPUBI/BIAdew2AHCPCxLXWSYK7sbYiiDbfd7F2GaS.'
 );
 
-
 -- SERVICES REPAS
-
 INSERT INTO service_repas
 (type_repas, heure_debut, heure_fin)
 VALUES
 ('DEJEUNER', '11:00:00', '14:00:00'),
 ('DINER', '17:00:00', '20:00:00');
 
-
 -- MENUS
-
 INSERT INTO menu
 (date_menu, description, id_service, id_admin)
 VALUES
-('2026-03-10', 'Poulet rôti + riz + salade', 1, 1),
-('2026-03-10', 'Couscous + légumes', 2, 1);
-
+(CURDATE(), 'Poulet rôti + riz + salade', 1, 1),
+(CURDATE(), 'Couscous + légumes', 2, 1);
 
 -- RESERVATIONS
-
 INSERT INTO reservation
 (date_repas, statut, id_utilisateur, id_service)
 VALUES
-('2026-03-10', 'CONFIRMEE', 1, 1),
-('2026-03-10', 'CONFIRMEE', 2, 2),
-('2026-03-10', 'ANNULE', 3, 2);
+(CURDATE(), 'EN_ATTENTE', 1, 1),
+(CURDATE(), 'VALIDEE', 2, 2),
+(CURDATE(), 'ANNULEE', 3, 2);
