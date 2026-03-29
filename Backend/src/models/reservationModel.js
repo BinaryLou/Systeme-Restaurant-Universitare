@@ -1,8 +1,8 @@
 const pool = require('../config/db');
 
 const RESERVATION_STATUS = {
-  RESERVED: 'RESERVEE',
-  USED: 'UTILISEE',
+  RESERVED: 'EN_ATTENTE',
+  USED: 'VALIDEE',
   CANCELED: 'ANNULEE',
 };
 
