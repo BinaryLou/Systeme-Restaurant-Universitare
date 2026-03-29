@@ -20,7 +20,7 @@ app.use("/admin", require("./routes/admin"));
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/services", require("./routes/services"));
 app.use('/api/reservations', require('./routes/reservations'));
-
+app.use("/api/scan", require("./routes/scan"));
 
 app.use((req, res) => {
   throw new AppError(`Route ${req.originalUrl} not found`, 404);
