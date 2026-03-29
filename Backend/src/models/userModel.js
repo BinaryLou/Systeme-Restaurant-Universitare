@@ -64,10 +64,29 @@ const findUserByQrCode = async (codeQr) => {
   return rows[0] || null;
 };
 
+const findUserQrById = async (idUtilisateur) => {
+  const sql = `
+    SELECT 
+      id_utilisateur,
+      apogee,
+      nom,
+      prenom,
+      email,
+      code_qr
+    FROM utilisateur
+    WHERE id_utilisateur = ?
+    LIMIT 1
+  `;
+
+  const [rows] = await pool.execute(sql, [idUtilisateur]);
+  return rows[0] || null;
+};
+
 
 
 module.exports = {
   findUserByApogee,
   findUserById,
   findUserByQrCode,
+  findUserQrById,
 };
