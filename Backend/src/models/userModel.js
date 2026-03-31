@@ -99,6 +99,25 @@ const findUserByEmail = async (email) => {
   const [rows] = await pool.execute(sql, [email]);
   return rows[0] || null;
 };
+const updateUserPasswordById = async (
+  connection,
+  idUtilisateur,
+  passwordHash
+) => {
+  const sql = `
+    UPDATE utilisateur
+    SET mot_de_passe_hash = ?,
+        updated_at = NOW()
+    WHERE id_utilisateur = ?
+  `;
+
+  const [result] = await connection.execute(sql, [
+    passwordHash,
+    idUtilisateur,
+  ]);
+
+  return result;
+};
 
 module.exports = {
   findUserByApogee,
@@ -106,4 +125,5 @@ module.exports = {
   findUserByQrCode,
   findUserQrById,
   findUserByEmail,
+  updateUserPasswordById,
 };

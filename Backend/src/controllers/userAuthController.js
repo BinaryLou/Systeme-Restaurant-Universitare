@@ -1,11 +1,17 @@
-const { loginUser, forgotPassword } = require("../services/userAuthService");
+const {
+  loginUser,
+  forgotPassword,
+  resetPassword,
+} = require("../services/userAuthService");
 const { sendSuccess } = require("../utils/apiResponse");
+const AppError = require("../utils/AppError");
 
 const userLogin = async (req, res, next) => {
   try {
     const { apogee, password } = req.body;
 
     const result = await loginUser({ apogee, password });
+
     res.cookie("refreshToken", result.tokens.refreshToken, {
       httpOnly: true,
       secure: false, // true en production
@@ -56,7 +62,33 @@ const forgotPasswordController = async (req, res, next) => {
   }
 };
 
+const resetPasswordController = async (req, res, next) => {
+  try {
+    const {
+      token,
+      new_password: newPassword,
+      confirm_password: confirmPassword,
+    } = req.body || {};
+
+    const result = await resetPassword({
+      token,
+      newPassword,
+      confirmPassword,
+    });
+
+    return sendSuccess(
+      res,
+      result,
+      "Mot de passe réinitialisé avec succès",
+      200
+    );
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   userLogin,
   forgotPasswordController,
+  resetPasswordController,
 };
