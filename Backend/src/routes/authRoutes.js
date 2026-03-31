@@ -1,4 +1,12 @@
 const express = require("express");
+const verifyJwt = require("../middlewares/verifyJwt");
+
+const {
+  validateForgotPasswordPayload,
+  validateResetPasswordPayload,
+  validateChangePasswordPayload,
+} = require("../middlewares/passwordValidation");
+
 const {
   userLogin,
   forgotPasswordController,
@@ -13,15 +21,28 @@ const {
 
 const router = express.Router();
 
-const verifyJwt = require("../middlewares/verifyJwt");
-
 router.post("/user/login", userLogin);
 router.post("/admin/login", adminLogin);
 router.post("/refresh", handleRefreshToken);
 router.post("/logout", handleLogout);
 
-router.post("/forgot-password", forgotPasswordController);
-router.post("/reset-password", resetPasswordController);
-router.patch("/change-password", verifyJwt, changePasswordController);
+router.post(
+  "/forgot-password",
+  validateForgotPasswordPayload,
+  forgotPasswordController
+);
+
+router.post(
+  "/reset-password",
+  validateResetPasswordPayload,
+  resetPasswordController
+);
+
+router.patch(
+  "/change-password",
+  verifyJwt,
+  validateChangePasswordPayload,
+  changePasswordController
+);
 
 module.exports = router;
