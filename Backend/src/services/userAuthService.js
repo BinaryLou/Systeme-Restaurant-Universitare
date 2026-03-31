@@ -2,8 +2,9 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 
 const { signAccessToken, signRefreshToken } = require("../utils/jwt");
-const { findUserByApogee ,findUserById ,findUserByQrCode } = require("../models/userModel");
+const { findUserByApogee ,findUserById ,findUserByQrCode, findUserByEmail } = require("../models/userModel");
 const { createRefreshToken } = require("../models/refreshTokenModel");
+const passwordResetTokenModel = require("../models/passwordResetTokenModel");
 const AppError = require("../utils/AppError");
 
 const loginUser = async ({ apogee, password }) => {
@@ -69,6 +70,59 @@ const loginUser = async ({ apogee, password }) => {
   };
 };
 
+const RESET_TOKEN_TTL_MINUTES = Number(process.env.RESET_TOKEN_TTL_MINUTES || 15);
+
+const forgotPassword = async (email) => {
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+
+  const user = await findUserByEmail(normalizedEmail);
+
+  // Toujours retourner un message générique
+  if (!user) {
+    return {
+      dev_reset_token: null,
+      expires_at: null,
+    };
+  }
+
+  const rawToken = crypto.randomBytes(32).toString("hex");
+  const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+
+  const expiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MINUTES * 60 * 1000);
+
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    await passwordResetTokenModel.deleteTokensForUser(
+      connection,
+      user.id_utilisateur
+    );
+
+    await passwordResetTokenModel.createResetToken(
+      connection,
+      user.id_utilisateur,
+      tokenHash,
+      expiresAt
+    );
+
+    await connection.commit();
+
+    return {
+      dev_reset_token:
+        process.env.NODE_ENV !== "production" ? rawToken : null,
+      expires_at: expiresAt.toISOString(),
+    };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
 module.exports = {
   loginUser,
+  forgotPassword,
 };

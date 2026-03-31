@@ -135,7 +135,7 @@ CREATE TABLE refresh_tokens (
 
 CREATE TABLE password_reset_tokens (
     id_reset_token INT AUTO_INCREMENT PRIMARY KEY,
-    id_utilisateur INT UNSIGNED NOT NULL,
+    id_utilisateur BIGINT UNSIGNED NOT NULL,
     token_hash VARCHAR(255) NOT NULL,
     expires_at DATETIME NOT NULL,
     used_at DATETIME NULL,
