@@ -1,4 +1,3 @@
-// src/models/userModel.js
 const pool = require("../config/db");
 
 const findUserByApogee = async (apogee) => {
@@ -83,10 +82,28 @@ const findUserQrById = async (idUtilisateur) => {
 };
 
 
+const findUserByEmail = async (email) => {
+  const sql = `
+    SELECT
+      id_utilisateur,
+      nom,
+      prenom,
+      email,
+      apogee,
+      mot_de_passe_hash
+    FROM utilisateur
+    WHERE LOWER(email) = LOWER(?)
+    LIMIT 1
+  `;
+
+  const [rows] = await pool.execute(sql, [email]);
+  return rows[0] || null;
+};
 
 module.exports = {
   findUserByApogee,
   findUserById,
   findUserByQrCode,
   findUserQrById,
+  findUserByEmail,
 };
