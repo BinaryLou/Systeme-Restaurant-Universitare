@@ -222,8 +222,84 @@ const resetPassword = async ({ token, newPassword, confirmPassword }) => {
   }
 };
 
+const changePassword = async ({
+  userId,
+  oldPassword,
+  newPassword,
+  confirmPassword,
+}) => {
+  if (!userId) {
+    throw new AppError("Utilisateur non authentifié", 401);
+  }
+
+  if (!oldPassword || !newPassword || !confirmPassword) {
+    throw new AppError("Tous les champs mot de passe sont obligatoires", 400);
+  }
+
+  if (newPassword !== confirmPassword) {
+    throw new AppError(
+      "La confirmation du nouveau mot de passe est invalide",
+      400
+    );
+  }
+
+  if (oldPassword === newPassword) {
+    throw new AppError(
+      "Le nouveau mot de passe doit être différent de l'ancien",
+      400
+    );
+  }
+
+  const user = await findUserById(userId);
+
+  if (!user) {
+    throw new AppError("Utilisateur introuvable", 404);
+  }
+
+  const isOldPasswordValid = await bcrypt.compare(
+    oldPassword,
+    user.mot_de_passe_hash
+  );
+
+  if (!isOldPasswordValid) {
+    throw new AppError("Ancien mot de passe incorrect", 400);
+  }
+
+  const newPasswordHash = await bcrypt.hash(
+    newPassword,
+    BCRYPT_SALT_ROUNDS
+  );
+
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const updated = await updateUserPasswordById(
+      connection,
+      userId,
+      newPasswordHash
+    );
+
+    if (!updated) {
+      throw new AppError("Impossible de modifier le mot de passe", 500);
+    }
+
+    await connection.commit();
+
+    return {};
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
+
 module.exports = {
   loginUser,
   forgotPassword,
   resetPassword,
+  changePassword,
 };

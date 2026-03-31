@@ -2,9 +2,11 @@ const {
   loginUser,
   forgotPassword,
   resetPassword,
+  changePassword,
 } = require("../services/userAuthService");
 const { sendSuccess } = require("../utils/apiResponse");
 const AppError = require("../utils/AppError");
+
 
 const userLogin = async (req, res, next) => {
   try {
@@ -87,8 +89,37 @@ const resetPasswordController = async (req, res, next) => {
   }
 };
 
+const changePasswordController = async (req, res, next) => {
+  try {
+    const userId = req.user?.id_utilisateur || req.user?.id;
+
+    if (!userId) {
+      return next(new AppError("Utilisateur non authentifié", 401));
+    }
+
+    const { old_password, new_password, confirm_password } = req.body || {};
+
+    await changePassword({
+      userId,
+      oldPassword: old_password,
+      newPassword: new_password,
+      confirmPassword: confirm_password,
+    });
+
+    return sendSuccess(
+      res,
+      {},
+      "Mot de passe modifié avec succès",
+      200
+    );
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   userLogin,
   forgotPasswordController,
   resetPasswordController,
+  changePasswordController,
 };
