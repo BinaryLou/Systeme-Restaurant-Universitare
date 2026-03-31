@@ -132,3 +132,21 @@ CREATE TABLE refresh_tokens (
     ON UPDATE CASCADE
     ON DELETE CASCADE
 );
+
+CREATE TABLE password_reset_tokens (
+    id_reset_token INT AUTO_INCREMENT PRIMARY KEY,
+    id_utilisateur INT UNSIGNED NOT NULL,
+    token_hash VARCHAR(255) NOT NULL,
+    expires_at DATETIME NOT NULL,
+    used_at DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_password_reset_tokens_user
+        FOREIGN KEY (id_utilisateur)
+        REFERENCES utilisateur(id_utilisateur)
+        ON DELETE CASCADE,
+
+    INDEX idx_password_reset_tokens_user (id_utilisateur),
+    INDEX idx_password_reset_tokens_expires_at (expires_at),
+    UNIQUE KEY uq_password_reset_token_hash (token_hash)
+);
