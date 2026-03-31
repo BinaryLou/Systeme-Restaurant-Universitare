@@ -11,7 +11,7 @@ VALUES
   'A12345',
   '$2b$10$zQDbS9e7UmEYFkiHjdAu5ebZhnFKNcxsxi.2q/pXBs1eJS23SiwsK',
   600.00,
-  'QR12345'
+  UUID()
 ),
 (
   'Benali',
@@ -20,7 +20,7 @@ VALUES
   'A12346',
   '$2b$10$CICtmntKX/K09CmtsSCp8erGLiweJKbM3vTQoDiL/zjOx9Wd4jOIG',
   600.00,
-  'QR12346'
+  UUID()
 ),
 (
   'Karim',
@@ -29,7 +29,7 @@ VALUES
   'A12347',
   '$2b$10$gQ8vYJmP0C3pVxK1X6qCMeR9h2W7X8Y9Z0a1b2c3d4e5f6g7h8i',
   600.00,
-  'QR12347'
+  UUID()
 );
 
 -- ADMINISTRATEUR
@@ -64,3 +64,14 @@ VALUES
 (CURDATE(), 'EN_ATTENTE', 1, 1),
 (CURDATE(), 'VALIDEE', 2, 2),
 (CURDATE(), 'ANNULEE', 3, 2);
+
+INSERT INTO password_reset_tokens (
+  id_utilisateur,
+  token_hash,
+  expires_at
+)
+VALUES (
+  1,
+  'hashed_token_mysql_test_1',
+  DATE_ADD(NOW(), INTERVAL 1 HOUR)
+);
