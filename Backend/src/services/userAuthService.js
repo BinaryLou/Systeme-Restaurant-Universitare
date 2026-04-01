@@ -10,7 +10,8 @@ const {
   findUserByEmail,
   updateUserPasswordById,
 } = require("../models/userModel");
-const { createRefreshToken } = require("../models/refreshTokenModel");
+const { createRefreshToken , deleteExpiredTokens: deleteExpiredRefreshTokens,
+  revokeAllUserRefreshTokens,} = require("../models/refreshTokenModel");
 const passwordResetTokenModel = require("../models/passwordResetTokenModel");
 const AppError = require("../utils/AppError");
 
@@ -83,6 +84,9 @@ const RESET_TOKEN_TTL_MINUTES = Number(
 
 const forgotPassword = async (email) => {
   const normalizedEmail = String(email || "").trim().toLowerCase();
+  
+  await deleteExpiredRefreshTokens();
+  await passwordResetTokenModel.deleteExpiredTokens();
 
   const user = await findUserByEmail(normalizedEmail);
 
@@ -203,6 +207,8 @@ const resetPassword = async ({ token, newPassword, confirmPassword }) => {
       user.id_utilisateur
     );
 
+    await revokeAllUserRefreshTokens(connection, user.id_utilisateur);
+
     await connection.commit();
 
     return {
@@ -284,6 +290,8 @@ const changePassword = async ({
     if (!updated) {
       throw new AppError("Impossible de modifier le mot de passe", 500);
     }
+
+    await revokeAllUserRefreshTokens(connection, user.id_utilisateur);
 
     await connection.commit();
 
