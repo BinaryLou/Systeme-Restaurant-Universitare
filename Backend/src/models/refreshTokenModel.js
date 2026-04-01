@@ -84,6 +84,19 @@ const findValidRefreshTokenByHash = async (tokenHash) => {
   return rows[0] || null;
 };
 
+const revokeAllUserRefreshTokens = async (connection, userId) => {
+  const sql = `
+    UPDATE refresh_tokens
+    SET revoked_at = NOW()
+    WHERE account_type = 'USER'
+      AND user_id = ?
+      AND revoked_at IS NULL
+      AND expires_at > NOW()
+  `;
+
+  const [result] = await connection.execute(sql, [userId]);
+  return result.affectedRows;
+};
 
 
 module.exports = {
@@ -91,5 +104,6 @@ module.exports = {
   findByTokenHash,
   revokeRefreshToken,
   deleteExpiredTokens ,
-  findValidRefreshTokenByHash
+  findValidRefreshTokenByHash,
+  revokeAllUserRefreshTokens,
 };
