@@ -2,69 +2,202 @@
 
 ## Objectif
 
-Vérifier manuellement le bon fonctionnement des endpoints liés au scan QR pour le personnel RU.
+Vérifier le bon fonctionnement des endpoints liés au scan QR pour le personnel RU.
 
 Cette checklist couvre :
-- l’accès sécurisé à l’interface de scan via PIN
-- le scan d’un QR code étudiant
-- la validation métier du ticket
-- la protection anti double scan
-- les cas d’erreur et de sécurité
-
-## Références métier
-
-Règles à respecter :
-- le personnel accède à l’interface via PIN ou lien sécurisé
-- le personnel ne possède pas de compte applicatif
-- le système doit vérifier :
-  - l’existence d’une réservation pour la date du jour
-  - la correspondance avec le service et l’heure actuelle
-  - le statut du ticket (non utilisé)
-- si le scan est valide, le ticket doit être marqué comme `UTILISEE`
-- un ticket utilisé ne peut plus être réutilisé
-
-## Prérequis
-
-Avant de commencer, vérifier que :
-
-- le backend tourne localement
-- la base MySQL est démarrée
-- les tables sont migrées / seedées
-- au moins un étudiant existe avec :
-  - un `code_qr` valide
-  - une réservation `RESERVEE` pour aujourd’hui
-- les services déjeuner / dîner existent avec des horaires cohérents
-- la variable d’environnement `SCAN_PIN` est définie
-
-## Variables Postman recommandées
-
-Créer une collection Postman avec les variables suivantes :
-
-- `base_url` = `http://localhost:3000`
-- `scan_pin` = valeur du PIN local
-- `valid_qr` = QR d’un étudiant ayant une réservation valide aujourd’hui
-- `used_qr` = QR déjà consommé
-- `invalid_qr` = valeur inexistante, par ex. `qr_not_found_123`
-- `wrong_pin` = `0000`
-
-## Endpoints testés
-
-### 1. Vérification accès scan
-`POST /api/scan/access`
-
-### 2. Scan QR
-`POST /api/scan`
+- accès sécurisé via PIN
+- validation du QR code
+- règles métier (réservation, service, statut)
+- protection anti double scan
+- gestion des erreurs
 
 ---
 
-# 1) Test accès scan avec PIN valide
+## 1) Accès interface scan (PIN valide)
 
-## Requête
-**Method:** `POST`  
-**URL:** `{{base_url}}/api/scan/access`
+### Requête
+POST /api/scan/access
 
-### Body JSON
-```json
+### Headers
+Content-Type: application/json
+
+### Body
 {
-  "pin": "{{scan_pin}}"
+  "pin": "1234"
 }
+
+### Résultat attendu
+- Status: 200
+- Message: "Accès au scan autorisé"
+
+---
+
+## 2) Accès sans PIN
+
+### Requête
+POST /api/scan/access
+
+### Body
+{}
+
+### Résultat attendu
+- Status: 401 ou 400
+- Message d’erreur
+
+---
+
+## 3) Accès avec PIN incorrect
+
+### Requête
+POST /api/scan/access
+
+### Body
+{
+  "pin": "0000"
+}
+
+### Résultat attendu
+- Status: 401
+- Message: PIN invalide
+
+---
+
+## 4) Scan QR valide
+
+### Préconditions
+- utilisateur existe
+- réservation aujourd’hui
+- bon service
+- statut = RESERVEE
+
+### Requête
+POST /api/scan
+
+### Body
+{
+  "qr_code": "VALID_QR"
+}
+
+### Résultat attendu
+- Status: 200
+- Message: Scan effectué avec succès
+- statut passe à UTILISEE
+
+---
+
+## 5) QR invalide
+
+### Requête
+POST /api/scan
+
+### Body
+{
+  "qr_code": "INVALID_QR"
+}
+
+### Résultat attendu
+- Status: 404 ou 400
+- Message: utilisateur introuvable
+
+---
+
+## 6) Pas de réservation aujourd’hui
+
+### Préconditions
+- utilisateur existe
+- aucune réservation pour aujourd’hui
+
+### Résultat attendu
+- Status: 400
+- Message: aucune réservation
+
+---
+
+## 7) Mauvais service (ex: dîner au lieu de déjeuner)
+
+### Résultat attendu
+- Status: 400
+- Message: service incorrect
+
+---
+
+## 8) Ticket déjà utilisé (anti double scan)
+
+### Étapes
+1. scanner une première fois (succès)
+2. scanner une deuxième fois
+
+### Résultat attendu
+- Status: 400 ou 409
+- Message: ticket déjà utilisé
+
+---
+
+## 9) Double scan rapide (concurrence)
+
+### Étapes
+- lancer 2 requêtes en même temps
+
+### Résultat attendu
+- une seule réussite
+- l’autre refusée
+
+---
+
+## 10) Scan sans QR
+
+### Body
+{}
+
+### Résultat attendu
+- Status: 400
+- Message: qr_code obligatoire
+
+---
+
+## 11) Scan avec mauvais format
+
+### Body
+{
+  "qr_code": 123
+}
+
+### Résultat attendu
+- Status: 400
+- Message: format invalide
+
+---
+
+## 12) Scan sans PIN (si middleware appliqué)
+
+### Résultat attendu
+- Status: 401
+- accès refusé
+
+---
+
+## Vérifications en base de données
+
+Après scan valide :
+- statut = UTILISEE
+- date_validation ≠ NULL
+
+---
+
+## Checklist finale
+
+- [ ] accès scan sécurisé
+- [ ] scan valide fonctionne
+- [ ] erreurs bien gérées
+- [ ] anti double scan OK
+- [ ] règles métier respectées
+- [ ] réponses API correctes
+
+---
+
+## Conclusion
+
+Le scan QR est considéré fonctionnel si :
+- validation correcte
+- aucune fraude possible
+- aucune incohérence en base
