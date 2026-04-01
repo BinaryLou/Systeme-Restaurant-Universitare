@@ -11,7 +11,7 @@ const serviceRoutes = require("./routes/services");
 const protectedRoutes = require("./routes/protected");
 
 const errorHandler = require("./middlewares/errorHandler");
-const logger = require("./middlewares/logger");
+const { logger } = require("./middlewares/logger");
 
 const app = express();
 
