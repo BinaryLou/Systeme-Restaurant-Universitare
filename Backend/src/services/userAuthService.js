@@ -262,6 +262,8 @@ const changePassword = async ({
     throw new AppError("Utilisateur introuvable", 404);
   }
 
+  const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS || 10);
+
   const isOldPasswordValid = await bcrypt.compare(
     oldPassword,
     user.mot_de_passe_hash
@@ -273,7 +275,7 @@ const changePassword = async ({
 
   const newPasswordHash = await bcrypt.hash(
     newPassword,
-    BCRYPT_SALT_ROUNDS
+    saltRounds
   );
 
   const connection = await db.getConnection();
