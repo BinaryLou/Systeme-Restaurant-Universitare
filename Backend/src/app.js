@@ -8,7 +8,11 @@ const healthRoutes = require("./routes/health");
 const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/admin");
 const serviceRoutes = require("./routes/services");
+const reservatiosRoutes = require("./routes/reservations");
 const protectedRoutes = require("./routes/protected");
+const scanRoutes = require("./routes/scan");
+const usersRoutes = require("./routes/users");
+
 
 const errorHandler = require("./middlewares/errorHandler");
 const { logger } = require("./middlewares/logger");
@@ -76,6 +80,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/protected", protectedRoutes);
+app.use("/api/reservations", reservatiosRoutes);
+app.use("/api/scan", scanRoutes);
+app.use("/api/users",usersRoutes);
 
 // Route 404
 app.use((req, res) => {
