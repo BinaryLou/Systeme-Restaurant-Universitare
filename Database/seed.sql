@@ -75,3 +75,65 @@ VALUES (
   'hashed_token_mysql_test_1',
   DATE_ADD(NOW(), INTERVAL 1 HOUR)
 );
+
+INSERT INTO weekly_menus (
+  day_of_week,
+  label,
+  lunch_content,
+  dinner_content,
+  is_published,
+  is_closed,
+  created_by_admin_id
+)
+VALUES (
+  1,
+  'Menu standard du lundi',
+  JSON_OBJECT(
+    'entree', 'Salade verte',
+    'plat', 'Poulet rôti',
+    'accompagnement', 'Riz',
+    'dessert', 'Fruit'
+  ),
+  JSON_OBJECT(
+    'entree', 'Soupe',
+    'plat', 'Poisson grillé',
+    'accompagnement', 'Pommes vapeur',
+    'dessert', 'Yaourt'
+  ),
+  TRUE,
+  FALSE,
+  1
+);
+
+INSERT INTO menu_exceptions (
+  menu_date,
+  weekly_menu_id,
+  label,
+  lunch_content,
+  dinner_content,
+  is_published,
+  is_closed,
+  reason,
+  created_by_admin_id
+)
+VALUES (
+  '2026-01-28',
+  1,
+  'Menu exceptionnel du 28 janvier',
+  JSON_OBJECT(
+    'entree', 'Salade marocaine',
+    'plat', 'Tajine de poulet',
+    'accompagnement', 'Semoule',
+    'dessert', 'Orange'
+  ),
+  JSON_OBJECT(
+    'entree', 'Harira',
+    'plat', 'Poisson au four',
+    'accompagnement', 'Légumes',
+    'dessert', 'Flan'
+  ),
+  TRUE,
+  FALSE,
+  'Journée spéciale',
+  1
+);
