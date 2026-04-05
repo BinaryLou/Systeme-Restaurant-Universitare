@@ -13,6 +13,7 @@ const protectedRoutes = require("./routes/protected");
 const scanRoutes = require("./routes/scan");
 const usersRoutes = require("./routes/users");
 const menuRoutes = require("./routes/menus");
+const publicMenuRoutes = require("./routes/publicMenus");
 
 const errorHandler = require("./middlewares/errorHandler");
 const { logger } = require("./middlewares/logger");
@@ -84,6 +85,7 @@ app.use("/api/reservations", reservatiosRoutes);
 app.use("/api/scan", scanRoutes);
 app.use("/api/users",usersRoutes);
 app.use("/api/admin", menuRoutes);
+app.use("/api/menus", publicMenuRoutes);
 
 // Route 404
 app.use((req, res) => {
