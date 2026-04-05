@@ -50,13 +50,6 @@ VALUES
 ('DEJEUNER', '11:00:00', '14:00:00'),
 ('DINER', '17:00:00', '20:00:00');
 
--- MENUS
-INSERT INTO menu
-(date_menu, description, id_service, id_admin)
-VALUES
-(CURDATE(), 'Poulet rôti + riz + salade', 1, 1),
-(CURDATE(), 'Couscous + légumes', 2, 1);
-
 -- RESERVATIONS
 INSERT INTO reservation
 (date_repas, statut, id_utilisateur, id_service)
