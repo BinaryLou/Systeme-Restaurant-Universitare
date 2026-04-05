@@ -83,27 +83,140 @@ INSERT INTO weekly_menus (
   dinner_content,
   is_published,
   is_closed,
-  created_by_admin_id
-)
-VALUES (
+  created_by_admin_id,
+  updated_by_admin_id
+) VALUES
+(
   1,
   'Menu standard du lundi',
   JSON_OBJECT(
     'entree', 'Salade verte',
     'plat', 'Poulet rôti',
     'accompagnement', 'Riz',
-    'dessert', 'Fruit'
+    'dessert', 'Fruit de saison'
   ),
   JSON_OBJECT(
-    'entree', 'Soupe',
+    'entree', 'Soupe de légumes',
     'plat', 'Poisson grillé',
     'accompagnement', 'Pommes vapeur',
     'dessert', 'Yaourt'
   ),
   TRUE,
   FALSE,
+  1,
+  1
+),
+(
+  2,
+  'Menu standard du mardi',
+  JSON_OBJECT(
+    'entree', 'Carottes râpées',
+    'plat', 'Boeuf mijoté',
+    'accompagnement', 'Purée',
+    'dessert', 'Orange'
+  ),
+  JSON_OBJECT(
+    'entree', 'Harira',
+    'plat', 'Omelette fromage',
+    'accompagnement', 'Salade',
+    'dessert', 'Pomme'
+  ),
+  TRUE,
+  FALSE,
+  1,
+  1
+),
+(
+  3,
+  'Menu standard du mercredi',
+  JSON_OBJECT(
+    'entree', 'Salade marocaine',
+    'plat', 'Tajine de poulet',
+    'accompagnement', 'Semoule',
+    'dessert', 'Banane'
+  ),
+  JSON_OBJECT(
+    'entree', 'Velouté',
+    'plat', 'Pâtes bolognaise',
+    'accompagnement', 'Pain',
+    'dessert', 'Yaourt aux fruits'
+  ),
+  TRUE,
+  FALSE,
+  1,
+  1
+),
+(
+  4,
+  'Menu standard du jeudi',
+  JSON_OBJECT(
+    'entree', 'Betteraves',
+    'plat', 'Kefta sauce tomate',
+    'accompagnement', 'Riz',
+    'dessert', 'Poire'
+  ),
+  JSON_OBJECT(
+    'entree', 'Soupe de lentilles',
+    'plat', 'Quiche légumes',
+    'accompagnement', 'Salade verte',
+    'dessert', 'Compote'
+  ),
+  TRUE,
+  FALSE,
+  1,
+  1
+),
+(
+  5,
+  'Menu standard du vendredi',
+  JSON_OBJECT(
+    'entree', 'Concombre tomate',
+    'plat', 'Couscous',
+    'accompagnement', 'Légumes',
+    'dessert', 'Raisin'
+  ),
+  JSON_OBJECT(
+    'entree', 'Chorba',
+    'plat', 'Pizza maison',
+    'accompagnement', 'Salade',
+    'dessert', 'Flan'
+  ),
+  TRUE,
+  FALSE,
+  1,
+  1
+),
+(
+  6,
+  'Menu standard du samedi',
+  JSON_OBJECT(
+    'entree', 'Macédoine',
+    'plat', 'Escalope panée',
+    'accompagnement', 'Frites',
+    'dessert', 'Pêche'
+  ),
+  JSON_OBJECT(
+    'entree', 'Soupe du chef',
+    'plat', 'Gratin de légumes',
+    'accompagnement', 'Pain complet',
+    'dessert', 'Yaourt nature'
+  ),
+  TRUE,
+  FALSE,
+  1,
+  1
+),
+(
+  7,
+  'Restaurant fermé le dimanche',
+  NULL,
+  NULL,
+  TRUE,
+  TRUE,
+  1,
   1
 );
+
 
 INSERT INTO menu_exceptions (
   menu_date,
@@ -114,26 +227,40 @@ INSERT INTO menu_exceptions (
   is_published,
   is_closed,
   reason,
-  created_by_admin_id
-)
-VALUES (
+  created_by_admin_id,
+  updated_by_admin_id
+) VALUES
+(
   '2026-01-28',
-  1,
+  3,
   'Menu exceptionnel du 28 janvier',
   JSON_OBJECT(
-    'entree', 'Salade marocaine',
-    'plat', 'Tajine de poulet',
-    'accompagnement', 'Semoule',
-    'dessert', 'Orange'
+    'entree', 'Salade spéciale',
+    'plat', 'Tajine viande pruneaux',
+    'accompagnement', 'Semoule royale',
+    'dessert', 'Pâtisserie marocaine'
   ),
   JSON_OBJECT(
-    'entree', 'Harira',
+    'entree', 'Harira spéciale',
     'plat', 'Poisson au four',
-    'accompagnement', 'Légumes',
-    'dessert', 'Flan'
+    'accompagnement', 'Légumes sautés',
+    'dessert', 'Crème dessert'
   ),
   TRUE,
   FALSE,
-  'Journée spéciale',
+  'Journée spéciale campus',
+  1,
+  1
+),
+(
+  '2026-01-30',
+  5,
+  'Fermeture exceptionnelle',
+  NULL,
+  NULL,
+  TRUE,
+  TRUE,
+  'Maintenance exceptionnelle',
+  1,
   1
 );
