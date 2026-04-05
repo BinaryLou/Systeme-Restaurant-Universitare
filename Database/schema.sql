@@ -150,3 +150,74 @@ CREATE TABLE password_reset_tokens (
     INDEX idx_password_reset_tokens_expires_at (expires_at),
     UNIQUE KEY uq_password_reset_token_hash (token_hash)
 );
+
+-- =========================================================
+-- S7-01 : Weekly menus + menu exceptions
+-- =========================================================
+
+CREATE TABLE IF NOT EXISTS weekly_menus (
+  id_weekly_menu BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  day_of_week TINYINT NOT NULL,
+  label VARCHAR(150) NOT NULL,
+  lunch_content JSON DEFAULT NULL,
+  dinner_content JSON DEFAULT NULL,
+  is_published BOOLEAN NOT NULL DEFAULT FALSE,
+  is_closed BOOLEAN NOT NULL DEFAULT FALSE,
+  created_by_admin_id BIGINT UNSIGNED NOT NULL,
+  updated_by_admin_id BIGINT UNSIGNED DEFAULT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (id_weekly_menu),
+  CONSTRAINT uq_weekly_menus_day_of_week UNIQUE (day_of_week),
+  CONSTRAINT chk_weekly_menus_day_of_week CHECK (day_of_week BETWEEN 1 AND 7),
+
+  CONSTRAINT fk_weekly_menus_created_by_admin
+    FOREIGN KEY (created_by_admin_id)
+    REFERENCES administrateur(id_admin)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+
+  CONSTRAINT fk_weekly_menus_updated_by_admin
+    FOREIGN KEY (updated_by_admin_id)
+    REFERENCES administrateur(id_admin)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS menu_exceptions (
+  id_menu_exception BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  menu_date DATE NOT NULL,
+  weekly_menu_id BIGINT UNSIGNED DEFAULT NULL,
+  label VARCHAR(150) NOT NULL,
+  lunch_content JSON DEFAULT NULL,
+  dinner_content JSON DEFAULT NULL,
+  is_published BOOLEAN NOT NULL DEFAULT FALSE,
+  is_closed BOOLEAN NOT NULL DEFAULT FALSE,
+  reason VARCHAR(255) DEFAULT NULL,
+  created_by_admin_id BIGINT UNSIGNED NOT NULL,
+  updated_by_admin_id BIGINT UNSIGNED DEFAULT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (id_menu_exception),
+  CONSTRAINT uq_menu_exceptions_menu_date UNIQUE (menu_date),
+
+  CONSTRAINT fk_menu_exceptions_weekly_menu
+    FOREIGN KEY (weekly_menu_id)
+    REFERENCES weekly_menus(id_weekly_menu)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+
+  CONSTRAINT fk_menu_exceptions_created_by_admin
+    FOREIGN KEY (created_by_admin_id)
+    REFERENCES administrateur(id_admin)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+
+  CONSTRAINT fk_menu_exceptions_updated_by_admin
+    FOREIGN KEY (updated_by_admin_id)
+    REFERENCES administrateur(id_admin)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+);
