@@ -48,32 +48,6 @@ CREATE TABLE service_repas (
   CONSTRAINT chk_service_heures CHECK (heure_debut < heure_fin)
 );
 
--- TABLE: MENU
-CREATE TABLE menu (
-  id_menu      BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  date_menu    DATE NOT NULL,
-  description  TEXT NOT NULL,
-  id_service   BIGINT UNSIGNED NOT NULL,
-  id_admin     BIGINT UNSIGNED NOT NULL,
-  created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-
-  PRIMARY KEY (id_menu),
-  KEY idx_menu_service (id_service),
-  KEY idx_menu_admin (id_admin),
-  KEY idx_menu_date (date_menu),
-
-  CONSTRAINT fk_menu_service
-    FOREIGN KEY (id_service) REFERENCES service_repas(id_service)
-    ON UPDATE CASCADE
-    ON DELETE RESTRICT,
-
-  CONSTRAINT fk_menu_admin
-    FOREIGN KEY (id_admin) REFERENCES administrateur(id_admin)
-    ON UPDATE CASCADE
-    ON DELETE RESTRICT
-);
-
 -- TABLE: RESERVATION
 CREATE TABLE reservation (
   id_reservation   BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
