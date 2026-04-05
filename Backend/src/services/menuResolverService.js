@@ -1,11 +1,20 @@
 const AppError = require("../utils/AppError");
+const db = require("../config/db");
 const {
+  getAllWeeklyMenus,
   getWeeklyMenuByDay,
+  createWeeklyMenu,
+  updateWeeklyMenu,
+  setWeeklyMenuPublishStatus,
 } = require("../models/weeklyMenuModel");
 const {
   getExceptionByDate,
   getExceptionsByMonth,
+  createMenuException,
+  updateMenuException,
+  deleteMenuException,
 } = require("../models/menuExceptionModel");
+
 
 const toDateString = (value) => {
   if (!value) {
@@ -175,7 +184,159 @@ const getMonthlyMenuCalendar = async (year, month) => {
   };
 };
 
+const getWeeklyMenus = async () => {
+  return getAllWeeklyMenus();
+};
+
+const getWeeklyMenuByDayService = async (dayOfWeek) => {
+  const menu = await getWeeklyMenuByDay(dayOfWeek);
+
+  if (!menu) {
+    throw new AppError("Menu hebdomadaire introuvable", 404);
+  }
+
+  return menu;
+};
+
+const upsertWeeklyMenu = async ({ dayOfWeek, payload, adminId }) => {
+  const existingMenu = await getWeeklyMenuByDay(dayOfWeek);
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    if (existingMenu) {
+      const updated = await updateWeeklyMenu(connection, dayOfWeek, {
+        ...payload,
+        updated_by_admin_id: adminId,
+      });
+
+      if (!updated) {
+        throw new AppError("Impossible de mettre à jour le menu hebdomadaire", 500);
+      }
+    } else {
+      await createWeeklyMenu(connection, {
+        ...payload,
+        day_of_week: dayOfWeek,
+        created_by_admin_id: adminId,
+        updated_by_admin_id: adminId,
+      });
+    }
+
+    await connection.commit();
+    return getWeeklyMenuByDay(dayOfWeek);
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
+const publishWeeklyMenu = async ({ dayOfWeek, isPublished, adminId }) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const updated = await setWeeklyMenuPublishStatus(
+      connection,
+      dayOfWeek,
+      isPublished,
+      adminId
+    );
+
+    if (!updated) {
+      throw new AppError("Menu hebdomadaire introuvable", 404);
+    }
+
+    await connection.commit();
+    return getWeeklyMenuByDay(dayOfWeek);
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
+const createDateException = async ({ payload, adminId }) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    await createMenuException(connection, {
+      ...payload,
+      created_by_admin_id: adminId,
+      updated_by_admin_id: adminId,
+    });
+
+    await connection.commit();
+    return getExceptionByDate(payload.menu_date);
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
+const updateDateException = async ({ id, payload, adminId }) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const updated = await updateMenuException(connection, id, {
+      ...payload,
+      updated_by_admin_id: adminId,
+    });
+
+    if (!updated) {
+      throw new AppError("Exception de menu introuvable", 404);
+    }
+
+    await connection.commit();
+    return getExceptionByDate(payload.menu_date);
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
+const deleteDateException = async (id) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const deleted = await deleteMenuException(connection, id);
+
+    if (!deleted) {
+      throw new AppError("Exception de menu introuvable", 404);
+    }
+
+    await connection.commit();
+    return {};
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
 module.exports = {
   resolveMenuByDate,
   getMonthlyMenuCalendar,
+  getWeeklyMenus,
+  getWeeklyMenuByDayService,
+  upsertWeeklyMenu,
+  publishWeeklyMenu,
+  createDateException,
+  updateDateException,
+  deleteDateException,
 };
