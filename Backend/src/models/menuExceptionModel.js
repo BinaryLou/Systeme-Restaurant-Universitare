@@ -63,6 +63,31 @@ const getExceptionByDate = async (menuDate) => {
   return mapMenuExceptionRow(rows[0] || null);
 };
 
+const getExceptionById = async (id) => {
+  const sql = `
+    SELECT
+      id_menu_exception,
+      menu_date,
+      weekly_menu_id,
+      label,
+      lunch_content,
+      dinner_content,
+      is_published,
+      is_closed,
+      reason,
+      created_by_admin_id,
+      updated_by_admin_id,
+      created_at,
+      updated_at
+    FROM menu_exceptions
+    WHERE id_menu_exception = ?
+    LIMIT 1
+  `;
+
+  const [rows] = await db.query(sql, [id]);
+  return mapMenuExceptionRow(rows[0] || null);
+};
+
 const createMenuException = async (connection, payload) => {
   const sql = `
     INSERT INTO menu_exceptions (
@@ -108,36 +133,75 @@ const createMenuException = async (connection, payload) => {
 };
 
 const updateMenuException = async (connection, id, payload) => {
+  const fields = [];
+  const params = [];
+
+  if (payload.menu_date !== undefined) {
+    fields.push("menu_date = ?");
+    params.push(payload.menu_date);
+  }
+
+  if (payload.weekly_menu_id !== undefined) {
+    fields.push("weekly_menu_id = ?");
+    params.push(payload.weekly_menu_id ?? null);
+  }
+
+  if (payload.label !== undefined) {
+    fields.push("label = ?");
+    params.push(payload.label);
+  }
+
+  if (payload.lunch_content !== undefined) {
+    fields.push("lunch_content = ?");
+    params.push(
+      payload.lunch_content ? JSON.stringify(payload.lunch_content) : null
+    );
+  }
+
+  if (payload.dinner_content !== undefined) {
+    fields.push("dinner_content = ?");
+    params.push(
+      payload.dinner_content ? JSON.stringify(payload.dinner_content) : null
+    );
+  }
+
+  if (payload.is_published !== undefined) {
+    fields.push("is_published = ?");
+    params.push(payload.is_published);
+  }
+
+  if (payload.is_closed !== undefined) {
+    fields.push("is_closed = ?");
+    params.push(payload.is_closed);
+  }
+
+  if (payload.reason !== undefined) {
+    fields.push("reason = ?");
+    params.push(payload.reason ?? null);
+  }
+
+  fields.push("updated_by_admin_id = ?");
+  params.push(payload.updated_by_admin_id ?? null);
+
+  if (fields.length === 0) {
+    return getExceptionById(id);
+  }
+
   const sql = `
     UPDATE menu_exceptions
-    SET
-      menu_date = ?,
-      weekly_menu_id = ?,
-      label = ?,
-      lunch_content = ?,
-      dinner_content = ?,
-      is_published = ?,
-      is_closed = ?,
-      reason = ?,
-      updated_by_admin_id = ?
+    SET ${fields.join(", ")}
     WHERE id_menu_exception = ?
   `;
 
-  const params = [
-    payload.menu_date,
-    payload.weekly_menu_id ?? null,
-    payload.label,
-    payload.lunch_content ? JSON.stringify(payload.lunch_content) : null,
-    payload.dinner_content ? JSON.stringify(payload.dinner_content) : null,
-    payload.is_published ?? false,
-    payload.is_closed ?? false,
-    payload.reason ?? null,
-    payload.updated_by_admin_id ?? null,
-    id,
-  ];
+  params.push(id);
 
   const [result] = await connection.query(sql, params);
-  return result.affectedRows > 0;
+
+  if (result.affectedRows === 0) {
+    return null;
+  }
+
+  return getExceptionById(id);
 };
 
 const deleteMenuException = async (connection, id) => {
@@ -178,6 +242,7 @@ const getExceptionsByMonth = async (year, month) => {
 
 module.exports = {
   getExceptionByDate,
+  getExceptionById,
   createMenuException,
   updateMenuException,
   deleteMenuException,

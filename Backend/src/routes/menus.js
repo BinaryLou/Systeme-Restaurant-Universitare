@@ -3,7 +3,8 @@ const verifyJwt = require("../middlewares/verifyJwt");
 const requireRole = require("../middlewares/requireRole");
 const {
   validateWeeklyMenuPayload,
-  validateMenuExceptionPayload,
+  validateMenuExceptionCreatePayload,
+  validateMenuExceptionUpdatePayload,
 } = require("../middlewares/menuValidation");
 const {
   getWeeklyMenusController,
@@ -22,12 +23,15 @@ router.use(verifyJwt);
 router.use(requireRole("ADMIN"));
 
 router.get("/weekly-menus", getWeeklyMenusController);
+
 router.get("/weekly-menus/:dayOfWeek", getWeeklyMenuByDayController);
+
 router.put(
   "/weekly-menus/:dayOfWeek",
   validateWeeklyMenuPayload,
   upsertWeeklyMenuController
 );
+
 router.patch(
   "/weekly-menus/:dayOfWeek/publish",
   publishWeeklyMenuController
@@ -35,14 +39,16 @@ router.patch(
 
 router.post(
   "/menu-exceptions",
-  validateMenuExceptionPayload,
+  validateMenuExceptionCreatePayload,
   createMenuExceptionController
 );
+
 router.patch(
   "/menu-exceptions/:id",
-  validateMenuExceptionPayload,
+  validateMenuExceptionUpdatePayload,
   updateMenuExceptionController
 );
+
 router.delete(
   "/menu-exceptions/:id",
   deleteMenuExceptionController
