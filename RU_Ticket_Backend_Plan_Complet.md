@@ -128,103 +128,167 @@ Mettre en place base technique solide.
 
 ------------------------------------------------------------------------
 
-# 🏁 Sprint 1 --- Authentification
+# 🏁 Sprint 1 — Authentification
 
-### Personne A
+## Couvre
 
--   JWT access + refresh
--   Middleware auth
--   Middleware RBAC
--   Logout
--   Standardisation réponses
+BF-01, BF-02
 
-### Personne B
+## Backend
 
--   Table refresh tokens
--   Gestion expiration
--   Login admin
--   Tests auth
+- Login étudiant (Apogée + mot de passe)
+- JWT access + refresh
+- Middleware `verifyJwt`
+- Middleware `requireRole`
+- Gestion session
 
 ------------------------------------------------------------------------
 
-# 🏁 Sprint 2 --- Services (Admin)
+# 🏁 Sprint 2 — Services (Admin)
 
-### Personne A
+## Couvre
 
--   Middleware ADMIN
--   Validation horaires
+BF-13
 
-### Personne B
+## Backend
 
--   CRUD services
--   Tests DB
-
-------------------------------------------------------------------------
-
-# 🏁 Sprint 3 --- Réservation + Solde
-
-### Personne A
-
--   Validation J..J+30
--   Validation fermeture 12h
--   Controllers
--   Gestion erreurs métier
-
-### Personne B
-
--   Transaction SQL
--   SELECT FOR UPDATE
--   INSERT réservation
--   UPDATE solde
--   Gestion ER_DUP_ENTRY
--   Historique réservations
+- CRUD services (déjeuner / dîner)
+- Validation horaires
+- Middleware ADMIN
 
 ------------------------------------------------------------------------
 
-# 🏁 Sprint 4 --- QR & Scan
+# 🏁 Sprint 3 — Réservation + Solde 🔥 (CORE)
 
-### Personne A
+## Couvre
 
--   Génération QR
--   Middleware PIN
--   Rate limit scan
+BF-06, BF-07, BF-08, BF-09, BF-10
 
-### Personne B
+## Backend
 
--   Validation réservation jour
--   Vérification service
--   Update statut UTILISEE
--   Anti double scan
+- Création de réservation
+- Vérification règles métier :
+  - Réservation entre J et J+30
+  - Fermeture des réservations 12h avant service
+  - Anti double réservation
+  - Vérification solde suffisant
 
-------------------------------------------------------------------------
+- Décrémentation du solde
+- Historique des réservations
+- Annulation (H-4)
 
-# 🏁 Sprint 5 --- Sécurité & Password
+## API
 
-### Personne A
-
--   Forgot password
--   Change password
--   Helmet + CORS
-
-### Personne B
-
--   Reset password
--   Expiration token
--   Tests sécurité
+- POST `/api/reservations`
+- GET `/api/reservations`
+- PATCH `/api/reservations/:id/cancel`
 
 ------------------------------------------------------------------------
 
-# 🏁 Sprint 6 --- Tests & Optimisation
+# 🏁 Sprint 4 — QR Code & Scan 🔥 (CORE)
 
-### Personne A
+## Couvre
 
--   Tests auth
--   Documentation API
+BF-11, BF-12, BF-03
 
-### Personne B
+## Backend
 
--   Tests transactions
--   Optimisation requêtes
+- Génération QR code utilisateur
+- Endpoint scan QR
+- Vérifications :
+  - Réservation du jour
+  - Correspondance service
+  - Statut non utilisé
+
+- Mise à jour statut → UTILISEE
+- Anti double scan
+- Middleware PIN pour personnel
+
+------------------------------------------------------------------------
+
+# 🏁 Sprint 5 — Sécurité & Password
+
+## Couvre
+
+BF-04, BF-05
+
+## Backend
+
+- Forgot password
+- Reset password
+- Change password
+- Hash mot de passe (bcrypt)
+- Helmet
+- CORS
+- Rate limiting
+
+------------------------------------------------------------------------
+
+# 🏁 Sprint 6 — Tests & Optimisation 🔥
+
+## Objectif
+
+Stabiliser et sécuriser le projet.
+
+## Backend
+
+- Tests Postman sur tous les endpoints
+- Tests cas limites :
+  - Double réservation
+  - Solde insuffisant
+  - Dates invalides
+  - Accès sans token
+
+- Vérification transactions SQL
+- Optimisation requêtes SQL
+- Logs et gestion erreurs propres
+
+------------------------------------------------------------------------
+
+# 🏁 Sprint 7 — Menus (Admin)
+
+## Couvre
+
+BF-14
+
+## Backend
+
+- CRUD menus
+- Validation :
+  - Unicité (date + service)
+
+- Liaison avec services
+
+------------------------------------------------------------------------
+
+# 🏁 Sprint 8 — Statistiques
+
+## Couvre
+
+BF-15
+
+## Backend
+
+- Nombre de réservations
+- Taux de no-show
+- Agrégation (jour / semaine / mois)
+- Export (optionnel)
+
+------------------------------------------------------------------------
+
+# 🏁 Sprint 9 — Documentation & Préparation Soutenance
+
+## Objectif
+
+Finaliser et présenter le projet.
+
+## Backend
+
+- README propre
+- Documentation API
+- Explication architecture
+- Checklist Postman
+- Exemples de requêtes/réponses
 
 ------------------------------------------------------------------------
 

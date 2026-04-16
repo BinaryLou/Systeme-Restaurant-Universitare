@@ -1,5 +1,6 @@
 const AppError = require("../utils/AppError");
 const db = require("../config/db");
+
 const {
   getAllWeeklyMenus,
   getWeeklyMenuByDay,
@@ -7,6 +8,7 @@ const {
   updateWeeklyMenu,
   setWeeklyMenuPublishStatus,
 } = require("../models/weeklyMenuModel");
+
 const {
   getExceptionByDate,
   getExceptionsByMonth,
@@ -16,10 +18,11 @@ const {
 } = require("../models/menuExceptionModel");
 
 
+// Helpers
+
+
 const toDateString = (value) => {
-  if (!value) {
-    return null;
-  }
+  if (!value) return null;
 
   if (value instanceof Date) {
     return value.toISOString().split("T")[0];
@@ -30,9 +33,25 @@ const toDateString = (value) => {
 
 const getDayOfWeekFromDate = (dateString) => {
   const date = new Date(`${dateString}T00:00:00`);
-  const jsDay = date.getDay(); // 0=Sunday, 1=Monday, ... 6=Saturday
+  const jsDay = date.getDay(); // 0=Sunday
 
   return jsDay === 0 ? 7 : jsDay;
+};
+
+const isValidDateString = (value) => {
+  if (typeof value !== "string") return false;
+
+  const regex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!regex.test(value)) return false;
+
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() + 1 === month &&
+    date.getUTCDate() === day
+  );
 };
 
 const buildResolvedMenu = ({ date, source, menu }) => {
@@ -69,10 +88,14 @@ const buildResolvedMenu = ({ date, source, menu }) => {
   };
 };
 
+
+// Resolver
+
+
 const resolveMenuByDate = async (date) => {
   const normalizedDate = toDateString(date);
 
-  if (!normalizedDate) {
+  if (!normalizedDate || !isValidDateString(normalizedDate)) {
     throw new AppError("Date de menu invalide", 400);
   }
 
@@ -104,6 +127,10 @@ const resolveMenuByDate = async (date) => {
   });
 };
 
+
+// Calendar 
+
+
 const getDaysInMonth = (year, month) => {
   return new Date(year, month, 0).getDate();
 };
@@ -125,9 +152,18 @@ const getMonthlyMenuCalendar = async (year, month) => {
     throw new AppError("Année ou mois invalide", 400);
   }
 
-  const exceptions = await getExceptionsByMonth(parsedYear, parsedMonth);
+  
+  const [exceptions, weeklyMenus] = await Promise.all([
+    getExceptionsByMonth(parsedYear, parsedMonth),
+    getAllWeeklyMenus(),
+  ]);
+
   const exceptionMap = new Map(
     exceptions.map((item) => [toDateString(item.menu_date), item])
+  );
+
+  const weeklyMenuMap = new Map(
+    weeklyMenus.map((m) => [m.day_of_week, m])
   );
 
   const daysInMonth = getDaysInMonth(parsedYear, parsedMonth);
@@ -153,7 +189,7 @@ const getMonthlyMenuCalendar = async (year, month) => {
     }
 
     const dayOfWeek = getDayOfWeekFromDate(date);
-    const weeklyMenu = await getWeeklyMenuByDay(dayOfWeek);
+    const weeklyMenu = weeklyMenuMap.get(dayOfWeek);
 
     if (weeklyMenu && weeklyMenu.is_published) {
       days.push({
@@ -183,6 +219,10 @@ const getMonthlyMenuCalendar = async (year, month) => {
     days,
   };
 };
+
+
+// Weekly Menus
+
 
 const getWeeklyMenus = async () => {
   return getAllWeeklyMenus();
@@ -260,6 +300,10 @@ const publishWeeklyMenu = async ({ dayOfWeek, isPublished, adminId }) => {
   }
 };
 
+
+// Menu Exceptions
+
+
 const createDateException = async ({ payload, adminId }) => {
   const connection = await db.getConnection();
 
@@ -273,6 +317,7 @@ const createDateException = async ({ payload, adminId }) => {
     });
 
     await connection.commit();
+
     return getExceptionByDate(payload.menu_date);
   } catch (error) {
     await connection.rollback();
@@ -298,7 +343,9 @@ const updateDateException = async ({ id, payload, adminId }) => {
     }
 
     await connection.commit();
-    return getExceptionByDate(payload.menu_date);
+
+    // 🔥 FIX BUG : ne plus dépendre de payload.menu_date
+    return updated;
   } catch (error) {
     await connection.rollback();
     throw error;
@@ -328,6 +375,8 @@ const deleteDateException = async (id) => {
     connection.release();
   }
 };
+
+
 
 module.exports = {
   resolveMenuByDate,

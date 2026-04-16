@@ -9,18 +9,22 @@ const isValidBoolean = (value) => {
 };
 
 const isValidDateString = (value) => {
-  if (typeof value !== "string") {
-    return false;
-  }
+  if (typeof value !== "string") return false;
 
   const regex = /^\d{4}-\d{2}-\d{2}$/;
-  if (!regex.test(value)) {
-    return false;
-  }
+  if (!regex.test(value)) return false;
 
-  const date = new Date(`${value}T00:00:00`);
-  return !Number.isNaN(date.getTime());
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() + 1 === month &&
+    date.getUTCDate() === day
+  );
 };
+
+const hasContent = (content) => content !== null && content !== undefined;
 
 const validateMenuContent = (content) => {
   return content === null || content === undefined || isPlainObject(content);
@@ -31,25 +35,30 @@ const validateClosedAndContentConsistency = ({
   lunchContent,
   dinnerContent,
 }) => {
-  if (isClosed) {
-    return true;
+  const hasLunch = hasContent(lunchContent);
+  const hasDinner = hasContent(dinnerContent);
+
+  if (isClosed === true) {
+    // fermé => aucun contenu autorisé
+    return !hasLunch && !hasDinner;
   }
 
-  return lunchContent !== null && lunchContent !== undefined
-    || dinnerContent !== null && dinnerContent !== undefined;
+  // ouvert => au moins un contenu obligatoire
+  return hasLunch || hasDinner;
 };
+
+
 
 const validateWeeklyMenuPayload = (req, res, next) => {
   try {
+    const day_of_week = Number(req.params.dayOfWeek);
+
     const {
-      day_of_week,
       label,
       lunch_content,
       dinner_content,
       is_published,
       is_closed,
-      created_by_admin_id,
-      updated_by_admin_id,
     } = req.body || {};
 
     if (!Number.isInteger(day_of_week) || day_of_week < 1 || day_of_week > 7) {
@@ -85,25 +94,10 @@ const validateWeeklyMenuPayload = (req, res, next) => {
     ) {
       return next(
         new AppError(
-          "Un menu non fermé doit contenir au moins lunch_content ou dinner_content",
+          "Si is_closed est false, il faut au moins lunch_content ou dinner_content. Si is_closed est true, aucun contenu n'est autorisé.",
           400
         )
       );
-    }
-
-    if (
-      created_by_admin_id !== undefined &&
-      (!Number.isInteger(created_by_admin_id) || created_by_admin_id <= 0)
-    ) {
-      return next(new AppError("created_by_admin_id doit être un entier positif", 400));
-    }
-
-    if (
-      updated_by_admin_id !== undefined &&
-      updated_by_admin_id !== null &&
-      (!Number.isInteger(updated_by_admin_id) || updated_by_admin_id <= 0)
-    ) {
-      return next(new AppError("updated_by_admin_id doit être un entier positif", 400));
     }
 
     return next();
@@ -112,7 +106,9 @@ const validateWeeklyMenuPayload = (req, res, next) => {
   }
 };
 
-const validateMenuExceptionPayload = (req, res, next) => {
+
+
+const validateMenuExceptionCreatePayload = (req, res, next) => {
   try {
     const {
       menu_date,
@@ -123,12 +119,12 @@ const validateMenuExceptionPayload = (req, res, next) => {
       is_published,
       is_closed,
       reason,
-      created_by_admin_id,
-      updated_by_admin_id,
     } = req.body || {};
 
     if (!isValidDateString(menu_date)) {
-      return next(new AppError("menu_date doit être une date valide au format YYYY-MM-DD", 400));
+      return next(
+        new AppError("menu_date doit être une date valide au format YYYY-MM-DD", 400)
+      );
     }
 
     if (
@@ -168,7 +164,7 @@ const validateMenuExceptionPayload = (req, res, next) => {
     ) {
       return next(
         new AppError(
-          "Une exception non fermée doit contenir au moins lunch_content ou dinner_content",
+          "Si is_closed est false, il faut au moins lunch_content ou dinner_content. Si is_closed est true, aucun contenu n'est autorisé.",
           400
         )
       );
@@ -184,19 +180,87 @@ const validateMenuExceptionPayload = (req, res, next) => {
       );
     }
 
-    if (
-      created_by_admin_id !== undefined &&
-      (!Number.isInteger(created_by_admin_id) || created_by_admin_id <= 0)
-    ) {
-      return next(new AppError("created_by_admin_id doit être un entier positif", 400));
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+};
+
+
+
+const validateMenuExceptionUpdatePayload = (req, res, next) => {
+  try {
+    const {
+      menu_date,
+      weekly_menu_id,
+      label,
+      lunch_content,
+      dinner_content,
+      is_published,
+      is_closed,
+      reason,
+    } = req.body || {};
+
+    if (menu_date !== undefined && !isValidDateString(menu_date)) {
+      return next(
+        new AppError("menu_date doit être une date valide au format YYYY-MM-DD", 400)
+      );
     }
 
     if (
-      updated_by_admin_id !== undefined &&
-      updated_by_admin_id !== null &&
-      (!Number.isInteger(updated_by_admin_id) || updated_by_admin_id <= 0)
+      weekly_menu_id !== undefined &&
+      weekly_menu_id !== null &&
+      (!Number.isInteger(weekly_menu_id) || weekly_menu_id <= 0)
     ) {
-      return next(new AppError("updated_by_admin_id doit être un entier positif", 400));
+      return next(new AppError("weekly_menu_id doit être un entier positif", 400));
+    }
+
+    if (label !== undefined && (typeof label !== "string" || !label.trim())) {
+      return next(new AppError("label doit être une chaîne non vide", 400));
+    }
+
+    if (lunch_content !== undefined && !validateMenuContent(lunch_content)) {
+      return next(new AppError("lunch_content doit être un objet JSON ou null", 400));
+    }
+
+    if (dinner_content !== undefined && !validateMenuContent(dinner_content)) {
+      return next(new AppError("dinner_content doit être un objet JSON ou null", 400));
+    }
+
+    if (is_published !== undefined && !isValidBoolean(is_published)) {
+      return next(new AppError("is_published doit être un booléen", 400));
+    }
+
+    if (is_closed !== undefined && !isValidBoolean(is_closed)) {
+      return next(new AppError("is_closed doit être un booléen", 400));
+    }
+
+    if (
+      reason !== undefined &&
+      reason !== null &&
+      (typeof reason !== "string" || reason.length > 255)
+    ) {
+      return next(
+        new AppError("reason doit être une chaîne de caractères de 255 caractères maximum", 400)
+      );
+    }
+
+    // Vérification cohérence seulement si on modifie is_closed
+    if (is_closed !== undefined) {
+      if (
+        !validateClosedAndContentConsistency({
+          isClosed: is_closed,
+          lunchContent: lunch_content,
+          dinnerContent: dinner_content,
+        })
+      ) {
+        return next(
+          new AppError(
+            "Si is_closed est false, il faut au moins lunch_content ou dinner_content. Si is_closed est true, aucun contenu n'est autorisé.",
+            400
+          )
+        );
+      }
     }
 
     return next();
@@ -205,7 +269,9 @@ const validateMenuExceptionPayload = (req, res, next) => {
   }
 };
 
+
 module.exports = {
   validateWeeklyMenuPayload,
-  validateMenuExceptionPayload,
+  validateMenuExceptionCreatePayload,
+  validateMenuExceptionUpdatePayload,
 };
