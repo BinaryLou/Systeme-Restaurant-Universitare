@@ -71,8 +71,16 @@ const getDashboardSummary = async () => {
       ) AS reservations_this_week,
       SUM(CASE WHEN r.statut = 'UTILISEE' THEN 1 ELSE 0 END) AS used_tickets,
       SUM(CASE WHEN r.statut = 'RESERVEE' THEN 1 ELSE 0 END) AS reserved_tickets,
-      SUM(CASE WHEN r.statut = 'ANNULEE' THEN 1 ELSE 0 END) AS cancelled_tickets
+      SUM(CASE WHEN r.statut = 'ANNULEE' THEN 1 ELSE 0 END) AS cancelled_tickets,
+      SUM(
+        CASE
+          WHEN r.statut = 'RESERVEE'
+           AND TIMESTAMP(r.date_repas, s.heure_fin) < NOW()
+          THEN 1 ELSE 0
+        END
+      ) AS no_show_count
     FROM Reservation r
+    JOIN Service_Repas s ON s.id_service = r.id_service
   `;
 
   const [rows] = await db.query(sql);
@@ -305,12 +313,29 @@ const getRecentActivity = async (limit = 10) => {
   return rows;
 };
 
+const getNoShowCountByPeriod = async (periodType, filters = {}) => {
+  const { sql: whereClause, params } = buildPeriodWhereClause(periodType, filters);
+
+  const sql = `
+    SELECT COUNT(*) AS no_show_count
+    FROM Reservation r
+    JOIN Service_Repas s ON s.id_service = r.id_service
+    WHERE ${whereClause}
+      AND r.statut = 'RESERVEE'
+      AND TIMESTAMP(r.date_repas, s.heure_fin) < NOW()
+  `;
+
+  const [rows] = await db.query(sql, params);
+  return rows[0];
+};
+
 module.exports = {
   getDashboardSummary,
   getReservationsCountByPeriod,
   getUsedTicketsCountByPeriod,
   getCancelledCountByPeriod,
   getReservedCountByPeriod,
+  getNoShowCountByPeriod,
   getReservationTrend,
   getUsageTrend,
   getDashboardDailyReservations,
