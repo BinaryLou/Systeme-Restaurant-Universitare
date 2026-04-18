@@ -6,6 +6,7 @@ const {
 } = require("../services/userAuthService");
 const { sendSuccess } = require("../utils/apiResponse");
 const AppError = require("../utils/AppError");
+const { getRequestUserId } = require("../utils/requestUser");
 
 
 const userLogin = async (req, res, next) => {
@@ -91,7 +92,7 @@ const resetPasswordController = async (req, res, next) => {
 
 const changePasswordController = async (req, res, next) => {
   try {
-    const userId = req.user?.id_utilisateur || req.user?.id;
+    const userId = getRequestUserId(req);
 
     if (!userId) {
       return next(new AppError("Utilisateur non authentifié", 401));

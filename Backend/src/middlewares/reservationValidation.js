@@ -1,13 +1,5 @@
 const AppError = require("../utils/AppError");
-
-const isStrictDateFormat = (value) => {
-  return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value.trim());
-};
-
-const parseLocalDate = (value) => {
-  const [year, month, day] = value.split("-").map(Number);
-  return new Date(year, month - 1, day);
-};
+const { isStrictDateFormat, isValidDate, parseLocalDate } = require("../utils/dateValidation");
 
 const reservationValidation = (req, res, next) => {
   try {
@@ -25,15 +17,14 @@ const reservationValidation = (req, res, next) => {
       return next(new AppError("date_repas doit être au format YYYY-MM-DD", 400));
     }
 
+    if (!isValidDate(date_repas)) {
+      return next(new AppError("date_repas est invalide", 400));
+    }
+
     const cleanedDate = date_repas.trim();
     const reservationDate = parseLocalDate(cleanedDate);
 
-    if (
-      Number.isNaN(reservationDate.getTime()) ||
-      reservationDate.getFullYear() !== Number(cleanedDate.slice(0, 4)) ||
-      reservationDate.getMonth() !== Number(cleanedDate.slice(5, 7)) - 1 ||
-      reservationDate.getDate() !== Number(cleanedDate.slice(8, 10))
-    ) {
+    if (!reservationDate) {
       return next(new AppError("date_repas est invalide", 400));
     }
 

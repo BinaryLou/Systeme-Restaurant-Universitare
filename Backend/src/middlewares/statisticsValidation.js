@@ -1,28 +1,5 @@
 const AppError = require("../utils/AppError");
-
-const isStrictDateFormat = (value) => {
-  return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value.trim());
-};
-
-const isValidDate = (value) => {
-  if (!isStrictDateFormat(value)) {
-    return false;
-  }
-
-  const [yearStr, monthStr, dayStr] = value.trim().split("-");
-  const year = Number(yearStr);
-  const month = Number(monthStr);
-  const day = Number(dayStr);
-
-  const parsedDate = new Date(year, month - 1, day);
-
-  return (
-    !Number.isNaN(parsedDate.getTime()) &&
-    parsedDate.getFullYear() === year &&
-    parsedDate.getMonth() + 1 === month &&
-    parsedDate.getDate() === day
-  );
-};
+const { isStrictDateFormat, isValidDate } = require("../utils/dateValidation");
 
 const isValidYear = (value) => {
   if (typeof value !== "string" || !/^\d{4}$/.test(value.trim())) {
@@ -127,7 +104,7 @@ const validateStatisticsFilters = (req, res, next) => {
         break;
     }
 
-    next();
+    return next();
   } catch (error) {
     return next(new AppError("Erreur interne pendant la validation des statistiques", 500));
   }
