@@ -1,10 +1,11 @@
 const reservationService = require('../services/reservationService');
 const { sendSuccess } = require('../utils/apiResponse');
+const { getRequestUserId } = require('../utils/requestUser');
 
 const createReservation = async (req, res, next) => {
   try {
     const data = await reservationService.createReservation({
-      userId: req.user.id_utilisateur || req.user.id,
+      userId: getRequestUserId(req),
       dateRepas: req.body.date_repas,
       serviceId: req.body.id_service,
     });
@@ -23,7 +24,7 @@ const createReservation = async (req, res, next) => {
 const getMyReservations = async (req, res, next) => {
   try {
     const data = await reservationService.getMyReservations(
-      req.user.id_utilisateur || req.user.id
+      getRequestUserId(req)
     );
 
     return sendSuccess(
@@ -40,7 +41,7 @@ const getMyReservations = async (req, res, next) => {
 const cancelMyReservation = async (req, res, next) => {
   try {
     const data = await reservationService.cancelMyReservation({
-      userId: req.user.id_utilisateur || req.user.id,
+      userId: getRequestUserId(req),
       reservationId: req.params.id,
     });
 

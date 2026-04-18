@@ -1,5 +1,6 @@
 const AppError = require("../utils/AppError");
 const { sendSuccess } = require("../utils/apiResponse");
+const { getRequestAdminId } = require("../utils/requestUser");
 const {
   getWeeklyMenus,
   getWeeklyMenuByDayService,
@@ -11,9 +12,6 @@ const {
   getMonthlyMenuCalendar,
 } = require("../services/menuResolverService");
 
-const getAdminIdFromRequest = (req) => {
-  return req.user?.id_admin || req.user?.id;
-};
 
 const getWeeklyMenusController = async (req, res, next) => {
   try {
@@ -44,7 +42,7 @@ const getWeeklyMenuByDayController = async (req, res, next) => {
 const upsertWeeklyMenuController = async (req, res, next) => {
   try {
     const dayOfWeek = Number(req.params.dayOfWeek);
-    const adminId = getAdminIdFromRequest(req);
+    const adminId = getRequestAdminId(req);
 
     if (!Number.isInteger(dayOfWeek) || dayOfWeek < 1 || dayOfWeek > 7) {
       return next(new AppError("dayOfWeek doit être un entier entre 1 et 7", 400));
@@ -69,8 +67,9 @@ const upsertWeeklyMenuController = async (req, res, next) => {
 const publishWeeklyMenuController = async (req, res, next) => {
   try {
     const dayOfWeek = Number(req.params.dayOfWeek);
-    const adminId = getAdminIdFromRequest(req);
+    const adminId = getRequestAdminId(req);
     const { is_published } = req.body;
+    
 
     if (!Number.isInteger(dayOfWeek) || dayOfWeek < 1 || dayOfWeek > 7) {
       return next(new AppError("dayOfWeek doit être un entier entre 1 et 7", 400));
@@ -94,7 +93,7 @@ const publishWeeklyMenuController = async (req, res, next) => {
 
 const createMenuExceptionController = async (req, res, next) => {
   try {
-    const adminId = getAdminIdFromRequest(req);
+    const adminId = getRequestAdminId(req);
 
     if (!adminId) {
       return next(new AppError("Administrateur non identifié", 401));
@@ -113,7 +112,7 @@ const createMenuExceptionController = async (req, res, next) => {
 
 const updateMenuExceptionController = async (req, res, next) => {
   try {
-    const adminId = getAdminIdFromRequest(req);
+    const adminId = getRequestAdminId(req);
     const id = Number(req.params.id);
 
     if (!Number.isInteger(id) || id <= 0) {

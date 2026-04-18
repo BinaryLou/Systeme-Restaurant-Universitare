@@ -1,4 +1,5 @@
 const AppError = require("../utils/AppError");
+const {isValidDate } = require("../utils/dateValidation");
 
 const isPlainObject = (value) => {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -8,21 +9,6 @@ const isValidBoolean = (value) => {
   return typeof value === "boolean";
 };
 
-const isValidDateString = (value) => {
-  if (typeof value !== "string") return false;
-
-  const regex = /^\d{4}-\d{2}-\d{2}$/;
-  if (!regex.test(value)) return false;
-
-  const [year, month, day] = value.split("-").map(Number);
-  const date = new Date(Date.UTC(year, month - 1, day));
-
-  return (
-    date.getUTCFullYear() === year &&
-    date.getUTCMonth() + 1 === month &&
-    date.getUTCDate() === day
-  );
-};
 
 const hasContent = (content) => content !== null && content !== undefined;
 
@@ -121,7 +107,7 @@ const validateMenuExceptionCreatePayload = (req, res, next) => {
       reason,
     } = req.body || {};
 
-    if (!isValidDateString(menu_date)) {
+    if (!isValidDate(menu_date)) {
       return next(
         new AppError("menu_date doit être une date valide au format YYYY-MM-DD", 400)
       );
@@ -201,7 +187,7 @@ const validateMenuExceptionUpdatePayload = (req, res, next) => {
       reason,
     } = req.body || {};
 
-    if (menu_date !== undefined && !isValidDateString(menu_date)) {
+    if (menu_date !== undefined && !isValidDate(menu_date)) {
       return next(
         new AppError("menu_date doit être une date valide au format YYYY-MM-DD", 400)
       );
