@@ -14,6 +14,7 @@ const scanRoutes = require("./routes/scan");
 const usersRoutes = require("./routes/users");
 const menuRoutes = require("./routes/menus");
 const publicMenuRoutes = require("./routes/publicMenus");
+const statisticsRoutes = require("./routes/statistics");
 
 const errorHandler = require("./middlewares/errorHandler");
 const { logger } = require("./middlewares/logger");
@@ -88,6 +89,7 @@ app.use("/api/scan", scanRoutes);
 app.use("/api/users",usersRoutes);
 app.use("/api/admin", menuRoutes);
 app.use("/api/menus", publicMenuRoutes);
+app.use("/api/admin", statisticsRoutes);
 
 // Route 404
 app.use((req, res) => {
