@@ -16,6 +16,32 @@ const getDashboardStats = async (req, res, next) => {
   }
 };
 
+const getDetailedStatistics = async (req, res, next) => {
+  try {
+    const filters = {
+      period: req.query.period,
+      date: req.query.date,
+      startDate: req.query.startDate,
+      endDate: req.query.endDate,
+      year: req.query.year ? Number(req.query.year) : undefined,
+      month: req.query.month ? Number(req.query.month) : undefined,
+    };
+
+    const detailedStatistics =
+      await statisticsService.getDetailedStatistics(filters);
+
+    return sendSuccess(
+      res,
+      detailedStatistics,
+      "Statistiques détaillées récupérées avec succès",
+      200
+    );
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   getDashboardStats,
+  getDetailedStatistics,
 };
