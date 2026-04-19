@@ -124,8 +124,103 @@ const getDetailedStatistics = async (filters) => {
   };
 };
 
+const buildPeriodLabel = (filters = {}) => {
+  const { period, date, startDate, endDate, year, month } = filters;
+
+  if (period === "day") {
+    return `Jour : ${date}`;
+  }
+
+  if (period === "week") {
+    return `Semaine : ${startDate} → ${endDate}`;
+  }
+
+  if (period === "month") {
+    return `Mois : ${month}/${year}`;
+  }
+
+  return "Période non spécifiée";
+};
+const formatLabel = (value) => {
+  if (!value) return "-";
+
+  if (value instanceof Date) {
+    return value.toISOString().slice(0, 10);
+  }
+
+  const str = String(value);
+  return str.length >= 10 ? str.slice(0, 10) : str;
+};
+
+const getStatisticsForPdf = async (filters = {}) => {
+  const detailedStatistics = await getDetailedStatistics(filters);
+
+  const reservationTrend = detailedStatistics?.charts?.reservationTrend || [];
+  const usageTrend = detailedStatistics?.charts?.usageTrend || [];
+
+  const usageMap = new Map(
+    usageTrend.map((item) => [formatLabel(item.label), safeNumber(item.value)])
+  );
+
+  const cancelledTrend = await statisticsModel.getCancelledTrend(
+    filters.period,
+    filters
+  );
+
+  const cancelledMap = new Map(
+    cancelledTrend.map((item) => [
+      formatLabel(item.label),
+      safeNumber(item.value),
+    ])
+  );
+
+  const noShowTrend = await statisticsModel.getNoShowTrend(
+    filters.period,
+    filters
+  );
+
+  const noShowMap = new Map(
+    noShowTrend.map((item) => [formatLabel(item.label), safeNumber(item.value)])
+  );
+
+  const details = reservationTrend.map((item) => {
+    const label = formatLabel(item.label);
+    const reservations = safeNumber(item.value);
+    const used = usageMap.get(label) || 0;
+    const cancelled = cancelledMap.get(label) || 0;
+    const noShow = noShowMap.get(label) || 0;
+
+    return {
+      label,
+      reservations,
+      used,
+      cancelled,
+      noShow,
+    };
+  });
+
+  return {
+    periodLabel: buildPeriodLabel(filters),
+    generatedAt: new Date().toLocaleString("fr-FR"),
+    summary: {
+      totalReservations: safeNumber(
+        detailedStatistics?.summary?.totalReservations
+      ),
+      usedTickets: safeNumber(detailedStatistics?.summary?.usedTickets),
+      cancelledTickets: safeNumber(
+        detailedStatistics?.summary?.cancelledTickets
+      ),
+      usageRate: safeNumber(detailedStatistics?.summary?.usageRate),
+      noShowCount: safeNumber(detailedStatistics?.summary?.noShowCount),
+      noShowRate: safeNumber(detailedStatistics?.summary?.noShowRate),
+    },
+    details,
+  };
+};
+
 module.exports = {
   getDashboardStats,
   getDetailedStatistics,
   buildSummaryMetrics,
+  getStatisticsForPdf,
 };
