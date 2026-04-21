@@ -41,7 +41,38 @@ const getDetailedStatistics = async (req, res, next) => {
   }
 };
 
+const exportStatisticsExcel = async (req, res, next) => {
+  try {
+    const filters = {
+      period: req.query.period,
+      date: req.query.date,
+      startDate: req.query.startDate,
+      endDate: req.query.endDate,
+      year: req.query.year ? Number(req.query.year) : undefined,
+      month: req.query.month ? Number(req.query.month) : undefined,
+    };
+
+    const excelBuffer = await statisticsService.exportStatisticsExcel(filters);
+
+    const fileName = `statistics-${filters.period || "day"}-${Date.now()}.xlsx`;
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${fileName}"`
+    );
+
+    return res.send(excelBuffer);
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getDetailedStatistics,
+  exportStatisticsExcel,
 };

@@ -1,3 +1,4 @@
+const ExcelJS = require("exceljs");
 const statisticsModel = require("../models/statisticsModel");
 
 const safeNumber = (value) => {
@@ -124,8 +125,145 @@ const getDetailedStatistics = async (filters) => {
   };
 };
 
+const buildStatisticsExcelWorkbook = async (filters) => {
+  const stats = await getDetailedStatistics(filters);
+
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = "RU Ticket";
+  workbook.created = new Date();
+  workbook.modified = new Date();
+
+  // Feuille 1 : Résumé
+  const summarySheet = workbook.addWorksheet("Résumé");
+
+  summarySheet.columns = [
+    { header: "Champ", key: "field", width: 30 },
+    { header: "Valeur", key: "value", width: 20 },
+  ];
+
+  summarySheet.addRow({ field: "Période", value: stats.period || "-" });
+  summarySheet.addRow({ field: "Date", value: stats.filters?.date || "-" });
+  summarySheet.addRow({
+    field: "Date début",
+    value: stats.filters?.startDate || "-",
+  });
+  summarySheet.addRow({
+    field: "Date fin",
+    value: stats.filters?.endDate || "-",
+  });
+  summarySheet.addRow({ field: "Année", value: stats.filters?.year || "-" });
+  summarySheet.addRow({ field: "Mois", value: stats.filters?.month || "-" });
+
+  summarySheet.addRow({});
+
+  summarySheet.addRow({
+    field: "Total réservations",
+    value: stats.summary?.totalReservations || 0,
+  });
+  summarySheet.addRow({
+    field: "Tickets utilisés",
+    value: stats.summary?.usedTickets || 0,
+  });
+  summarySheet.addRow({
+    field: "Tickets annulés",
+    value: stats.summary?.cancelledTickets || 0,
+  });
+  summarySheet.addRow({
+    field: "Tickets réservés",
+    value: stats.summary?.reservedTickets || 0,
+  });
+  summarySheet.addRow({
+    field: "No-show",
+    value: stats.summary?.noShowCount || 0,
+  });
+  summarySheet.addRow({
+    field: "Taux d'utilisation (%)",
+    value: stats.summary?.usageRate || 0,
+  });
+  summarySheet.addRow({
+    field: "Taux d'annulation (%)",
+    value: stats.summary?.cancellationRate || 0,
+  });
+  summarySheet.addRow({
+    field: "Taux de no-show (%)",
+    value: stats.summary?.noShowRate || 0,
+  });
+
+  summarySheet.getRow(1).font = { bold: true };
+
+  // Feuille 2 : Tendance des réservations
+  const reservationTrendSheet = workbook.addWorksheet("Reservation Trend");
+
+  reservationTrendSheet.columns = [
+    { header: "Label", key: "label", width: 25 },
+    { header: "Réservations", key: "value", width: 20 },
+  ];
+
+  const reservationTrend = stats.charts?.reservationTrend || [];
+
+  if (reservationTrend.length === 0) {
+    reservationTrendSheet.addRow({ label: "Aucune donnée", value: 0 });
+  } else {
+    reservationTrend.forEach((item) => {
+      reservationTrendSheet.addRow({
+        label: item.label || "-",
+        value: safeNumber(item.value),
+      });
+    });
+  }
+
+  reservationTrendSheet.getRow(1).font = { bold: true };
+
+  // Feuille 3 : Tendance d'utilisation
+  const usageTrendSheet = workbook.addWorksheet("Usage Trend");
+
+  usageTrendSheet.columns = [
+    { header: "Label", key: "label", width: 25 },
+    { header: "Utilisés", key: "used", width: 15 },
+    { header: "Annulés", key: "cancelled", width: 15 },
+    { header: "No-show", key: "noShow", width: 15 },
+    { header: "Réservés", key: "reserved", width: 15 },
+  ];
+
+  const usageTrend = stats.charts?.usageTrend || [];
+
+  if (usageTrend.length === 0) {
+    usageTrendSheet.addRow({
+      label: "Aucune donnée",
+      used: 0,
+      cancelled: 0,
+      noShow: 0,
+      reserved: 0,
+    });
+  } else {
+    usageTrend.forEach((item) => {
+      usageTrendSheet.addRow({
+        label: item.label || "-",
+        used: safeNumber(item.usedTickets ?? item.used ?? 0),
+        cancelled: safeNumber(item.cancelledTickets ?? item.cancelled ?? 0),
+        noShow: safeNumber(item.noShowCount ?? item.noShow ?? 0),
+        reserved: safeNumber(item.reservedTickets ?? item.reserved ?? 0),
+      });
+    });
+  }
+
+  usageTrendSheet.getRow(1).font = { bold: true };
+
+  return workbook;
+};
+
+
+const exportStatisticsExcel = async (filters) => {
+  const workbook = await buildStatisticsExcelWorkbook(filters);
+  const buffer = await workbook.xlsx.writeBuffer();
+
+  return Buffer.from(buffer);
+};
+
+
 module.exports = {
   getDashboardStats,
   getDetailedStatistics,
   buildSummaryMetrics,
+  exportStatisticsExcel,
 };
