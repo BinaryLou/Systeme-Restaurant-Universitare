@@ -69,12 +69,12 @@ const getDashboardSummary = async () => {
           THEN 1 ELSE 0
         END
       ) AS reservations_this_week,
-      SUM(CASE WHEN r.statut = 'UTILISEE' THEN 1 ELSE 0 END) AS used_tickets,
-      SUM(CASE WHEN r.statut = 'RESERVEE' THEN 1 ELSE 0 END) AS reserved_tickets,
+      SUM(CASE WHEN r.statut = 'VALIDEE' THEN 1 ELSE 0 END) AS used_tickets,
+      SUM(CASE WHEN r.statut = 'EN_ATTENTE' THEN 1 ELSE 0 END) AS reserved_tickets,
       SUM(CASE WHEN r.statut = 'ANNULEE' THEN 1 ELSE 0 END) AS cancelled_tickets,
       SUM(
         CASE
-          WHEN r.statut = 'RESERVEE'
+          WHEN r.statut = 'EN_ATTENTE'
            AND TIMESTAMP(r.date_repas, s.heure_fin) < NOW()
           THEN 1 ELSE 0
         END
@@ -109,7 +109,7 @@ const getUsedTicketsCountByPeriod = async (periodType, filters = {}) => {
     SELECT COUNT(*) AS used_tickets
     FROM Reservation r
     WHERE ${whereClause}
-      AND r.statut = 'UTILISEE'
+      AND r.statut = 'VALIDEE'
   `;
 
   const [rows] = await db.query(sql, params);
@@ -123,7 +123,7 @@ const getReservedCountByPeriod = async (periodType, filters = {}) => {
     SELECT COUNT(*) AS reserved_tickets
     FROM Reservation r
     WHERE ${whereClause}
-      AND r.statut = 'RESERVEE'
+      AND r.statut = 'EN_ATTENTE'
   `;
 
   const [rows] = await db.query(sql, params);
@@ -213,7 +213,7 @@ const getUsageTrend = async (periodType, filters = {}) => {
         FROM Reservation r
         JOIN Service_Repas s ON s.id_service = r.id_service
         WHERE DATE(r.date_repas) = ?
-          AND r.statut = 'UTILISEE'
+          AND r.statut = 'VALIDEE'
         GROUP BY s.type_repas
         ORDER BY s.type_repas ASC
       `;
@@ -227,7 +227,7 @@ const getUsageTrend = async (periodType, filters = {}) => {
           COUNT(*) AS value
         FROM Reservation r
         WHERE DATE(r.date_repas) BETWEEN ? AND ?
-          AND r.statut = 'UTILISEE'
+          AND r.statut = 'VALIDEE'
         GROUP BY DATE(r.date_repas)
         ORDER BY DATE(r.date_repas) ASC
       `;
@@ -241,7 +241,7 @@ const getUsageTrend = async (periodType, filters = {}) => {
           COUNT(*) AS value
         FROM Reservation r
         WHERE YEAR(r.date_repas) = ? AND MONTH(r.date_repas) = ?
-          AND r.statut = 'UTILISEE'
+          AND r.statut = 'VALIDEE'
         GROUP BY DATE(r.date_repas)
         ORDER BY DATE(r.date_repas) ASC
       `;
@@ -321,12 +321,129 @@ const getNoShowCountByPeriod = async (periodType, filters = {}) => {
     FROM Reservation r
     JOIN Service_Repas s ON s.id_service = r.id_service
     WHERE ${whereClause}
-      AND r.statut = 'RESERVEE'
+      AND r.statut = 'EN_ATTENTE'
       AND TIMESTAMP(r.date_repas, s.heure_fin) < NOW()
   `;
 
   const [rows] = await db.query(sql, params);
   return rows[0];
+};
+
+const getCancelledTrend = async (periodType, filters = {}) => {
+  let sql = "";
+  let params = [];
+
+  switch (periodType) {
+    case PERIOD_TYPES.DAY:
+      sql = `
+        SELECT
+          s.type_repas AS label,
+          COUNT(*) AS value
+        FROM Reservation r
+        JOIN Service_Repas s ON s.id_service = r.id_service
+        WHERE DATE(r.date_repas) = ?
+          AND r.statut = 'ANNULEE'
+        GROUP BY s.type_repas
+        ORDER BY s.type_repas ASC
+      `;
+      params = [filters.date];
+      break;
+
+    case PERIOD_TYPES.WEEK:
+      sql = `
+        SELECT
+          DATE(r.date_repas) AS label,
+          COUNT(*) AS value
+        FROM Reservation r
+        WHERE DATE(r.date_repas) BETWEEN ? AND ?
+          AND r.statut = 'ANNULEE'
+        GROUP BY DATE(r.date_repas)
+        ORDER BY DATE(r.date_repas) ASC
+      `;
+      params = [filters.startDate, filters.endDate];
+      break;
+
+    case PERIOD_TYPES.MONTH:
+      sql = `
+        SELECT
+          DATE(r.date_repas) AS label,
+          COUNT(*) AS value
+        FROM Reservation r
+        WHERE YEAR(r.date_repas) = ? AND MONTH(r.date_repas) = ?
+          AND r.statut = 'ANNULEE'
+        GROUP BY DATE(r.date_repas)
+        ORDER BY DATE(r.date_repas) ASC
+      `;
+      params = [filters.year, filters.month];
+      break;
+
+    default:
+      throw new Error("Invalid period type");
+  }
+
+  const [rows] = await db.query(sql, params);
+  return rows;
+};
+
+const getNoShowTrend = async (periodType, filters = {}) => {
+  let sql = "";
+  let params = [];
+
+  switch (periodType) {
+    case PERIOD_TYPES.DAY:
+      sql = `
+        SELECT
+          s.type_repas AS label,
+          COUNT(*) AS value
+        FROM Reservation r
+        JOIN Service_Repas s ON s.id_service = r.id_service
+        WHERE DATE(r.date_repas) = ?
+          AND r.statut = 'EN_ATTENTE'
+          AND TIMESTAMP(r.date_repas, s.heure_fin) < NOW()
+        GROUP BY s.type_repas
+        ORDER BY s.type_repas ASC
+      `;
+      params = [filters.date];
+      break;
+
+    case PERIOD_TYPES.WEEK:
+      sql = `
+        SELECT
+          DATE(r.date_repas) AS label,
+          COUNT(*) AS value
+        FROM Reservation r
+        JOIN Service_Repas s ON s.id_service = r.id_service
+        WHERE DATE(r.date_repas) BETWEEN ? AND ?
+          AND r.statut = 'EN_ATTENTE'
+          AND TIMESTAMP(r.date_repas, s.heure_fin) < NOW()
+        GROUP BY DATE(r.date_repas)
+        ORDER BY DATE(r.date_repas) ASC
+      `;
+      params = [filters.startDate, filters.endDate];
+      break;
+
+    case PERIOD_TYPES.MONTH:
+      sql = `
+        SELECT
+          DATE(r.date_repas) AS label,
+          COUNT(*) AS value
+        FROM Reservation r
+        JOIN Service_Repas s ON s.id_service = r.id_service
+        WHERE YEAR(r.date_repas) = ? AND MONTH(r.date_repas) = ?
+          AND r.statut = 'EN_ATTENTE'
+          AND TIMESTAMP(r.date_repas, s.heure_fin) < NOW()
+        GROUP BY DATE(r.date_repas)
+        ORDER BY DATE(r.date_repas) ASC
+      `;
+      params = [filters.year, filters.month];
+      break;
+
+    default:
+      throw new Error("Invalid period type");
+  }
+
+  const [rows] = await db.query(sql, params);
+  return rows;
 };
 
 module.exports = {
@@ -341,4 +458,6 @@ module.exports = {
   getDashboardDailyReservations,
   getDashboardServiceSplit,
   getRecentActivity,
+  getCancelledTrend,
+  getNoShowTrend,
 };
