@@ -4,11 +4,10 @@ const router = express.Router();
 const verifyJwt = require("../middlewares/verifyJwt");
 const requireRole = require("../middlewares/requireRole");
 const validateStatisticsFilters = require("../middlewares/statisticsValidation");
-
 const {
   getDashboardStats,
   getDetailedStatistics,
-  exportStatisticsPdf,
+  exportStatisticsExcel,
 } = require("../controllers/statisticsController");
 
 router.get(
@@ -16,6 +15,14 @@ router.get(
   verifyJwt,
   requireRole("ADMIN"),
   getDashboardStats
+);
+
+router.get(
+  "/export/excel",
+  verifyJwt,
+  requireRole("ADMIN"),
+  validateStatisticsFilters,
+  exportStatisticsExcel
 );
 
 router.get(

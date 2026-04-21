@@ -42,7 +42,7 @@ const getDetailedStatistics = async (req, res, next) => {
   }
 };
 
-const exportStatisticsPdf = async (req, res, next) => {
+const exportStatisticsExcel = async (req, res, next) => {
   try {
     const filters = {
       period: req.query.period,
@@ -53,16 +53,20 @@ const exportStatisticsPdf = async (req, res, next) => {
       month: req.query.month ? Number(req.query.month) : undefined,
     };
 
-    const reportData = await statisticsService.getStatisticsForPdf(filters);
-    const pdfBuffer = await buildStatisticsPdfBuffer(reportData);
+    const excelBuffer = await statisticsService.exportStatisticsExcel(filters);
 
-    res.setHeader("Content-Type", "application/pdf");
+    const fileName = `statistics-${filters.period || "day"}-${Date.now()}.xlsx`;
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
     res.setHeader(
       "Content-Disposition",
-      'attachment; filename="statistics-report.pdf"'
+      `attachment; filename="${fileName}"`
     );
 
-    return res.status(200).send(pdfBuffer);
+    return res.send(excelBuffer);
   } catch (error) {
     return next(error);
   }
@@ -71,5 +75,5 @@ const exportStatisticsPdf = async (req, res, next) => {
 module.exports = {
   getDashboardStats,
   getDetailedStatistics,
-  exportStatisticsPdf,
+  exportStatisticsExcel,
 };
