@@ -33,4 +33,12 @@ router.get(
   getDetailedStatistics
 );
 
+router.get(
+  "/statistics/export/pdf",
+  verifyJwt,
+  requireRole("ADMIN"),
+  validateStatisticsFilters,
+  exportStatisticsPdf
+);
+
 module.exports = router;

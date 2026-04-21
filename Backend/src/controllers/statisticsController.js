@@ -1,4 +1,5 @@
 const statisticsService = require("../services/statisticsService");
+const { buildStatisticsPdfBuffer } = require("../utils/pdf/statisticsPdfBuilder");
 const { sendSuccess } = require("../utils/apiResponse");
 
 const getDashboardStats = async (req, res, next) => {
