@@ -8,6 +8,7 @@ const {
   getDashboardStats,
   getDetailedStatistics,
   exportStatisticsExcel,
+  exportStatisticsPdf,
 } = require("../controllers/statisticsController");
 
 router.get(
@@ -18,19 +19,19 @@ router.get(
 );
 
 router.get(
-  "/export/excel",
-  verifyJwt,
-  requireRole("ADMIN"),
-  validateStatisticsFilters,
-  exportStatisticsExcel
-);
-
-router.get(
   "/statistics",
   verifyJwt,
   requireRole("ADMIN"),
   validateStatisticsFilters,
   getDetailedStatistics
+);
+
+router.get(
+  "/statistics/export/excel",
+  verifyJwt,
+  requireRole("ADMIN"),
+  validateStatisticsFilters,
+  exportStatisticsExcel
 );
 
 router.get(

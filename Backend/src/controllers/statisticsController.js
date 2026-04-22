@@ -72,8 +72,37 @@ const exportStatisticsExcel = async (req, res, next) => {
   }
 };
 
+const exportStatisticsPdf = async (req, res, next) => {
+  try {
+    const filters = {
+      period: req.query.period,
+      date: req.query.date,
+      startDate: req.query.startDate,
+      endDate: req.query.endDate,
+      year: req.query.year ? Number(req.query.year) : undefined,
+      month: req.query.month ? Number(req.query.month) : undefined,
+    };
+
+    const reportData = await statisticsService.getStatisticsForPdf(filters);
+    const pdfBuffer = await buildStatisticsPdfBuffer(reportData);
+
+    const fileName = `statistics-${filters.period || "day"}-${Date.now()}.pdf`;
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${fileName}"`
+    );
+
+    return res.send(pdfBuffer);
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getDetailedStatistics,
   exportStatisticsExcel,
+  exportStatisticsPdf,
 };
