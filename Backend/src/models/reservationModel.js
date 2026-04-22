@@ -1,7 +1,7 @@
 const pool = require('../config/db');
 
 const RESERVATION_STATUS = {
-  RESERVED: 'EN_ATTENTE',
+  RESERVED: 'RESERVEE',
   USED: 'VALIDEE',
   CANCELED: 'ANNULEE',
 };
@@ -99,7 +99,7 @@ async function findExistingReservationForUpdate(connection, userId, serviceId, d
  *   userId: number,
  *   serviceId: number,
  *   dateRepas: 'YYYY-MM-DD',
- *   statut?: 'EN_ATTENTE'
+ *   statut?: 'RESERVEE'
  * }
  */
 async function createReservation(connection, payload) {

@@ -99,7 +99,7 @@ GET /api/admin/statistics?period=week&startDate=2026-04-20&endDate=2026-04-14
 - aucune valeur `null` critique
 
 **Status**
-- [ ] Passed
+- [x] Passed
 - [ ] Failed
 
 ---
@@ -115,7 +115,7 @@ GET /api/admin/statistics?period=week&startDate=2026-04-20&endDate=2026-04-14
 - message d’erreur clair
 
 **Status**
-- [ ] Passed
+- [x] Passed
 - [ ] Failed
 
 ---
@@ -133,7 +133,7 @@ GET /api/admin/statistics?period=week&startDate=2026-04-20&endDate=2026-04-14
 - protection ADMIN confirmée
 
 **Status**
-- [ ] Passed
+- [x] Passed
 - [ ] Failed
 
 ---
@@ -152,7 +152,7 @@ GET /api/admin/statistics?period=week&startDate=2026-04-20&endDate=2026-04-14
 - agrégation cohérente
 
 **Status**
-- [ ] Passed
+- [x] Passed
 - [ ] Failed
 
 ---
@@ -171,7 +171,7 @@ GET /api/admin/statistics?period=week&startDate=2026-04-20&endDate=2026-04-14
 - cohérence avec les réservations en base
 
 **Status**
-- [ ] Passed
+- [x] Passed
 - [ ] Failed
 
 ---
@@ -190,7 +190,7 @@ GET /api/admin/statistics?period=week&startDate=2026-04-20&endDate=2026-04-14
 - agrégation mensuelle correcte
 
 **Status**
-- [ ] Passed
+- [x] Passed
 - [ ] Failed
 
 ---
@@ -210,7 +210,7 @@ GET /api/admin/statistics?period=week&startDate=2026-04-20&endDate=2026-04-14
 - pas de `NaN`
 
 **Status**
-- [ ] Passed
+- [x] Passed
 - [ ] Failed
 
 ---
@@ -229,7 +229,7 @@ GET /api/admin/statistics?period=week&startDate=2026-04-20&endDate=2026-04-14
 - contenu aligné avec les statistiques API
 
 **Status**
-- [ ] Passed
+- [x] Passed
 - [ ] Failed
 
 ---
@@ -249,7 +249,7 @@ GET /api/admin/statistics?period=week&startDate=2026-04-20&endDate=2026-04-14
 - cohérence avec les statistiques API
 
 **Status**
-- [ ] Passed
+- [x] Passed
 - [ ] Failed
 
 ---
@@ -267,7 +267,7 @@ GET /api/admin/statistics?period=week&startDate=2026-04-20&endDate=2026-04-14
 - la requête ne passe pas au service
 
 **Status**
-- [ ] Passed
+- [x] Passed
 - [ ] Failed
 
 ---
@@ -284,7 +284,7 @@ GET /api/admin/statistics?period=week&startDate=2026-04-20&endDate=2026-04-14
 - message d’erreur clair
 
 **Status**
-- [ ] Passed
+- [x] Passed
 - [ ] Failed
 
 ---
@@ -301,7 +301,7 @@ GET /api/admin/statistics?period=week&startDate=2026-04-20&endDate=2026-04-14
 - validation du mois appliquée
 
 **Status**
-- [ ] Passed
+- [x] Passed
 - [ ] Failed
 
 ---
@@ -318,7 +318,7 @@ GET /api/admin/statistics?period=week&startDate=2026-04-20&endDate=2026-04-14
 - erreur claire sur l’intervalle de dates
 
 **Status**
-- [ ] Passed
+- [x] Passed
 - [ ] Failed
 
 ---
@@ -333,7 +333,7 @@ GET /api/admin/statistics?period=week&startDate=2026-04-20&endDate=2026-04-14
 - accès refusé
 
 **Status**
-- [ ] Passed
+- [x] Passed
 - [ ] Failed
 
 ---
@@ -351,16 +351,16 @@ GET /api/admin/statistics?period=week&startDate=2026-04-20&endDate=2026-04-14
 - protection ADMIN confirmée
 
 **Status**
-- [ ] Passed
+- [x] Passed
 - [ ] Failed
 
 ---
 
 ## Final Validation
-- [ ] dashboard admin validé
-- [ ] detailed statistics validées
-- [ ] export Excel validé
-- [ ] export PDF validé
-- [ ] sécurité ADMIN validée
-- [ ] validation des filtres validée
-- [ ] cohérence des données validée
+- [x] dashboard admin validé
+- [x] detailed statistics validées
+- [x] export Excel validé
+- [x] export PDF validé
+- [x] sécurité ADMIN validée
+- [x] validation des filtres validée
+- [x] cohérence des données validée

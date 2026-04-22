@@ -53,7 +53,7 @@ CREATE TABLE reservation (
   id_reservation   BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   date_creation    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   date_repas       DATE NOT NULL,
-  statut           ENUM('EN_ATTENTE','ANNULEE','VALIDEE') NOT NULL DEFAULT 'EN_ATTENTE',
+  statut           ENUM('RESERVEE','ANNULEE','VALIDEE') NOT NULL DEFAULT 'RESERVEE',
   date_validation  DATETIME NULL,
   id_utilisateur   BIGINT UNSIGNED NOT NULL,
   id_service       BIGINT UNSIGNED NOT NULL,
@@ -125,9 +125,7 @@ CREATE TABLE password_reset_tokens (
     UNIQUE KEY uq_password_reset_token_hash (token_hash)
 );
 
--- =========================================================
--- S7-01 : Weekly menus + menu exceptions
--- =========================================================
+-- Weekly menus + menu exceptions
 
 CREATE TABLE IF NOT EXISTS weekly_menus (
   id_weekly_menu BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,

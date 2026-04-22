@@ -5,11 +5,11 @@ INSERT INTO utilisateur
 (nom, prenom, email, apogee, mot_de_passe_hash, solde, code_qr)
 VALUES
 (
-  'El Amrani',
-  'Youssef',
-  'youssef@ensa.ma',
-  'A12345',
-  '$2b$10$zQDbS9e7UmEYFkiHjdAu5ebZhnFKNcxsxi.2q/pXBs1eJS23SiwsK',
+  'Loukrati',
+  'Abderrahmane',
+  'Loukrati@ensa.ma',
+  'A1234',
+  '$2b$10$500yg65u4MpF8CQWxvwus.fe.H3GgWGp.E/DNzmsYOG.zZPIH6lNe', -- 123456
   600.00,
   UUID()
 ),
@@ -17,8 +17,8 @@ VALUES
   'Benali',
   'Sara',
   'sara@ensa.ma',
-  'A12346',
-  '$2b$10$CICtmntKX/K09CmtsSCp8erGLiweJKbM3vTQoDiL/zjOx9Wd4jOIG',
+  'A12345',
+  '$2b$10$500yg65u4MpF8CQWxvwus.fe.H3GgWGp.E/DNzmsYOG.zZPIH6lNe', -- 123456
   600.00,
   UUID()
 ),
@@ -26,8 +26,8 @@ VALUES
   'Karim',
   'Ahmed',
   'ahmed@ensa.ma',
-  'A12347',
-  '$2b$10$gQ8vYJmP0C3pVxK1X6qCMeR9h2W7X8Y9Z0a1b2c3d4e5f6g7h8i',
+  'A123456',
+  '$2b$10$500yg65u4MpF8CQWxvwus.fe.H3GgWGp.E/DNzmsYOG.zZPIH6lNe', -- 123456
   600.00,
   UUID()
 );
@@ -40,21 +40,21 @@ VALUES
   'Admin',
   'RU',
   'admin@ensa.ma',
-  '$2b$10$KhmaLc6B90AbPUBI/BIAdew2AHCPCxLXWSYK7sbYiiDbfd7F2GaS.'
+  '$2b$10$500yg65u4MpF8CQWxvwus.fe.H3GgWGp.E/DNzmsYOG.zZPIH6lNe' -- 123456
 );
 
 -- SERVICES REPAS
 INSERT INTO service_repas
 (type_repas, heure_debut, heure_fin)
 VALUES
-('DEJEUNER', '11:00:00', '14:00:00'),
+('DEJEUNER', '11:00:00', '14:30:00'),
 ('DINER', '17:00:00', '20:00:00');
 
 -- RESERVATIONS
 INSERT INTO reservation
 (date_repas, statut, id_utilisateur, id_service)
 VALUES
-(CURDATE(), 'EN_ATTENTE', 1, 1),
+(CURDATE(), 'RESERVEE', 1, 1),
 (CURDATE(), 'VALIDEE', 2, 2),
 (CURDATE(), 'ANNULEE', 3, 2);
 
