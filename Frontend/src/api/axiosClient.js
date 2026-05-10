@@ -63,8 +63,10 @@ axiosClient.interceptors.response.use(
 
     if (
       status === 401 &&
+      originalRequest &&
       !originalRequest._retry &&
-      !originalRequest.url.includes("/auth/login") &&
+      !originalRequest.url.includes("/auth/user/login") &&
+      !originalRequest.url.includes("/auth/admin/login") &&
       !originalRequest.url.includes("/auth/refresh")
     ) {
       originalRequest._retry = true;
@@ -84,7 +86,9 @@ axiosClient.interceptors.response.use(
         const refreshResponse = await axios.post(
           `${API_BASE_URL}/auth/refresh`,
           {},
-          { withCredentials: true }
+          {
+            withCredentials: true,
+          }
         );
 
         const newToken = refreshResponse.data?.data?.accessToken;
@@ -103,7 +107,7 @@ axiosClient.interceptors.response.use(
         processQueue(refreshError, null);
         clearAccessToken();
 
-        window.location.href = "/login";
+        window.location.href = "/";
 
         return Promise.reject(refreshError);
       } finally {
