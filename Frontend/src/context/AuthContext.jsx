@@ -71,12 +71,20 @@ export function AuthProvider({ children }) {
 
   const loginAsAdmin = async (credentials) => {
     const response = await loginAdmin(credentials);
-    const data = response.data?.data;
+
+    const data = response.data?.data || response.data;
+
+    const admin = data?.admin;
+    const token = data?.accessToken;
+
+    if (!admin || !token) {
+      throw new Error("Réponse login admin invalide.");
+    }
 
     saveAuth({
-      user: data.admin,
-      token: data.accessToken,
-      role: data.admin?.role || "ADMIN",
+      user: admin,
+      token: token,
+      role: admin.role || "ADMIN",
     });
 
     return data;
@@ -128,7 +136,7 @@ export function AuthProvider({ children }) {
       refreshAccessToken,
       logout,
     }),
-    [auth]
+    [auth],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
