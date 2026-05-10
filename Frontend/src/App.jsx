@@ -1,15 +1,25 @@
+import { loginStudent } from "./api/authApi";
+
 function App() {
+  const testLogin = async () => {
+    try {
+      const res = await loginStudent({
+        apogee: "A1234",
+        password: "Password123!",
+      });
+
+      console.log("Backend response:", res);
+      console.log("Token:", localStorage.getItem("accessToken"));
+    } catch (error) {
+      console.log("Erreur:", error);
+    }
+  };
+
   return (
-    <main className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="rounded-2xl bg-white p-8 shadow-md text-center">
-        <h1 className="text-3xl font-bold text-blue-600">
-          Restaurant Universitaire
-        </h1>
-        <p className="mt-3 text-gray-600">
-          Frontend React initialisé avec succès
-        </p>
-      </div>
-    </main>
+    <div style={{ padding: 40 }}>
+      <h1>Test Axios Backend</h1>
+      <button onClick={testLogin}>Test Backend Login</button>
+    </div>
   );
 }
 
