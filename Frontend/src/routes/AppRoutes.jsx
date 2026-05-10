@@ -1,5 +1,6 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import StudentLogin from "../pages/auth/StudentLogin";
+import AdminLogin from "../pages/auth/AdminLogin";
 import ProtectedRoute from "./ProtectedRoute";
 
 const StudentDashboard = () => {
@@ -22,7 +23,10 @@ const AppRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<Navigate to="/login" replace />} />
+
         <Route path="/login" element={<StudentLogin />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
 
         <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
@@ -37,7 +41,7 @@ const AppRoutes = () => {
           <Route path="/staff/scan" element={<StaffPage />} />
         </Route>
 
-        <Route path="*" element={<StudentLogin />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>
   );

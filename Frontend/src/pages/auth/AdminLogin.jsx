@@ -44,9 +44,12 @@ const AdminLogin = () => {
 
       navigate("/admin/dashboard");
     } catch (err) {
+      console.log("ADMIN LOGIN ERROR:", err);
+
       setError(
         err.response?.data?.message ||
-          "Identifiants administrateur invalides."
+          err.message ||
+          "Erreur lors de la connexion administrateur.",
       );
     } finally {
       setLoading(false);
@@ -251,7 +254,8 @@ const AdminLogin = () => {
         </div>
 
         <p className="relative z-10 mt-8 text-slate-500">
-          Utilisez vos identifiants administrateur pour accéder au tableau de bord
+          Utilisez vos identifiants administrateur pour accéder au tableau de
+          bord
         </p>
       </div>
     </>
