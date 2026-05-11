@@ -3,6 +3,10 @@ import StudentLogin from "../pages/auth/StudentLogin";
 import AdminLogin from "../pages/auth/AdminLogin";
 import ProtectedRoute from "./ProtectedRoute";
 
+import StudentLayout from "../layouts/StudentLayout";
+import AdminLayout from "../layouts/AdminLayout";
+import StaffLayout from "../layouts/StaffLayout";
+
 const StudentDashboard = () => {
   return <h1>Student Dashboard</h1>;
 };
@@ -30,15 +34,25 @@ const AppRoutes = () => {
         <Route path="/unauthorized" element={<Unauthorized />} />
 
         <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
-          <Route path="/student/dashboard" element={<StudentDashboard />} />
+          <Route element={<StudentLayout />}>
+            <Route path="/student/dashboard" element={<StudentDashboard />} />
+          </Route>
         </Route>
 
-        <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]} loginPath="/admin/login" />
+          }
+        >
+          <Route element={<AdminLayout />}>
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          </Route>
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={["STAFF"]} />}>
-          <Route path="/staff/scan" element={<StaffPage />} />
+          <Route element={<StaffLayout />}>
+            <Route path="/staff/scan" element={<StaffPage />} />
+          </Route>
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />
