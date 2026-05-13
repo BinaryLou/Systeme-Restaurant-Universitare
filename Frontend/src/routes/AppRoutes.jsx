@@ -7,6 +7,9 @@ import StudentLayout from "../layouts/StudentLayout";
 import AdminLayout from "../layouts/AdminLayout";
 import StaffLayout from "../layouts/StaffLayout";
 
+import StaffPinAccess from "../pages/staff/StaffPinAccess";
+import StaffScan from "../pages/staff/StaffScan";
+
 const StudentDashboard = () => {
   return <h1>Student Dashboard</h1>;
 };
@@ -56,6 +59,9 @@ const AppRoutes = () => {
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />
+
+        <Route path="/staff/pin" element={<StaffPinAccess />} />
+        <Route path="/staff/scan" element={<StaffScan />} />  
       </Routes>
     </BrowserRouter>
   );
