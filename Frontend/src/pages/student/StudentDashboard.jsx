@@ -175,7 +175,7 @@ const StudentDashboard = () => {
               </div>
 
               <div className="absolute bottom-4 right-4 rounded-lg bg-black/40 px-4 py-2 text-sm font-semibold text-white">
-                12:00 - 14:00
+                11:00 - 14:30
               </div>
             </div>
 
@@ -212,7 +212,7 @@ const StudentDashboard = () => {
               </div>
 
               <div className="absolute bottom-4 right-4 rounded-lg bg-black/40 px-4 py-2 text-sm font-semibold text-white">
-                19:00 - 21:00
+                17:00 - 20:00
               </div>
             </div>
 
