@@ -6,6 +6,8 @@ import ProtectedRoute from "./ProtectedRoute";
 import StudentLogin from "../pages/auth/StudentLogin";
 import StudentLayout from "../layouts/StudentLayout";
 import StudentDashboard from "../pages/student/StudentDashboard";
+import StudentHistory from "../pages/student/StudentHistory";
+import StudentQrCode from "../pages/student/StudentQrCode";
 import StudentReservation from "../pages/student/StudentReservation";
 
 // Admin
@@ -60,6 +62,8 @@ const AppRoutes = () => {
           <Route element={<StudentLayout />}>
             <Route path="/student/dashboard" element={<StudentDashboard />} />
             <Route path="/student/reserver" element={<StudentReservation />} />
+            <Route path="/student/historique" element={<StudentHistory />} />
+            <Route path="/student/qrcode" element={<StudentQrCode />} />
           </Route>
         </Route>
 

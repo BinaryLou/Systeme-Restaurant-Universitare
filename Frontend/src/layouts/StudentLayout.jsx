@@ -9,23 +9,30 @@ import {
   Wallet,
 } from "lucide-react";
 import logoRU from "../assets/logo-ru.png";
+import { useAuth } from "../hooks/useAuth";
 
 const StudentLayout = () => {
+  const { user, logout } = useAuth();
   const savedAuth = JSON.parse(localStorage.getItem("ru_auth") || "null");
-  const user =
-    savedAuth?.user || JSON.parse(localStorage.getItem("user") || "{}");
+  const savedUser = JSON.parse(localStorage.getItem("user") || "null");
+  const displayUser = user || savedAuth?.user || savedUser || {};
+  const displaySolde = Number(
+    displayUser?.solde ??
+      displayUser?.balance ??
+      savedAuth?.user?.solde ??
+      savedUser?.solde ??
+      0
+  );
 
   const menuItems = [
     { label: "Accueil", path: "/student/dashboard", icon: Home },
     { label: "Réserver", path: "/student/reserver", icon: CalendarPlus },
-    { label: "QR Code", path: "/student/qr-code", icon: QrCode },
+    { label: "QR Code", path: "/student/qrcode", icon: QrCode },
     { label: "Historique", path: "/student/historique", icon: History },
   ];
 
-  const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
-    localStorage.removeItem("ru_auth");
+  const handleLogout = async () => {
+    await logout();
     window.location.href = "/login";
   };
 
@@ -88,10 +95,10 @@ const StudentLayout = () => {
 
               <div>
                 <h3 className="text-sm font-bold text-slate-800">
-                  {user?.prenom || "Sara"} {user?.nom || "Benali"}
+                  {displayUser?.prenom || "Sara"} {displayUser?.nom || "Benali"}
                 </h3>
                 <p className="text-xs text-slate-500">
-                  {user?.apogee || "A12345"}
+                  {displayUser?.apogee || "A12345"}
                 </p>
               </div>
             </div>
@@ -100,7 +107,7 @@ const StudentLayout = () => {
               <Wallet size={16} />
               <span>Solde :</span>
               <strong className="text-slate-800">
-                {Number(user?.solde || 600).toFixed(2)} DH
+                {displaySolde.toFixed(2)} DH
               </strong>
             </div>
           </div>
