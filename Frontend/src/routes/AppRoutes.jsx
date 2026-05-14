@@ -11,9 +11,7 @@ import StaffLayout from "../layouts/StaffLayout";
 import StaffPinAccess from "../pages/staff/StaffPinAccess";
 import StaffScan from "../pages/staff/StaffScan";
 
-const StudentDashboard = () => {
-  return <h1>Student Dashboard</h1>;
-};
+import StudentDashboard from "../pages/student/StudentDashboard";
 
 const AdminDashboard = () => {
   return <h1>Admin Dashboard</h1>;
