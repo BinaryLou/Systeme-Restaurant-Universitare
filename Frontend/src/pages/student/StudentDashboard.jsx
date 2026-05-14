@@ -1,0 +1,240 @@
+import {
+  CalendarDays,
+  ChevronRight,
+  Clock3,
+  History,
+  QrCode,
+  Utensils,
+  Wallet,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+
+const StudentDashboard = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const student = user || JSON.parse(localStorage.getItem("user") || "null");
+
+  const firstName = student?.prenom || "Mohammed";
+  const lastName = student?.nom || "ALAMI";
+  const apogee = student?.apogee || "20220001";
+  const solde = student?.solde ?? 600;
+
+  return (
+    <div className="min-h-screen bg-[#f8fafc] px-8 py-8">
+      {/* HERO */}
+      <section className="rounded-[18px] bg-[#1d4fed] px-12 py-10 text-white shadow-xl shadow-blue-900/20">
+        <div className="flex items-center justify-between gap-6">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-100">
+              Tableau de bord étudiant
+            </p>
+
+            <h1 className="mt-4 text-5xl font-bold tracking-tight">
+              Bienvenue, {firstName} !
+            </h1>
+
+            <p className="mt-5 text-lg text-blue-100">
+              Gérez vos réservations de repas en quelques clics
+            </p>
+          </div>
+
+          <div className="flex min-w-[300px] items-center gap-5 rounded-2xl border border-white/20 bg-white/15 px-7 py-6 backdrop-blur">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/20">
+              <Wallet size={30} />
+            </div>
+
+            <div>
+              <p className="text-xs font-medium uppercase tracking-widest text-blue-100">
+                Solde disponible
+              </p>
+              <p className="mt-2 text-4xl font-bold">{solde} DH</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ACTIONS */}
+      <section className="mt-10">
+        <h2 className="text-2xl font-bold text-slate-900">Actions rapides</h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Accédez à vos services en un clic
+        </p>
+
+        <div className="mt-7 grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Réserver */}
+          <button
+            onClick={() => navigate("/student/reserver")}
+            className="group rounded-2xl bg-[#08b94e] p-7 text-left text-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/20">
+                <CalendarDays size={28} />
+              </div>
+
+              <span className="rounded-lg bg-white/20 px-4 py-2 text-xs font-semibold">
+                Principal
+              </span>
+            </div>
+
+            <h3 className="mt-7 text-2xl font-bold">Réserver un repas</h3>
+            <p className="mt-3 text-sm text-green-50">
+              Planifiez vos repas jusqu'à 30 jours à l'avance
+            </p>
+
+            <div className="mt-8 flex items-center gap-2 text-sm font-bold">
+              Accéder maintenant
+              <ChevronRight
+                size={18}
+                className="transition group-hover:translate-x-1"
+              />
+            </div>
+          </button>
+
+          {/* QR */}
+          <button
+            onClick={() => navigate("/student/qrcode")}
+            className="group rounded-2xl border border-slate-200 bg-white p-7 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+          >
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-50 text-[#1d4fed]">
+              <QrCode size={28} />
+            </div>
+
+            <h3 className="mt-7 text-2xl font-bold text-slate-900">
+              Mon QR Code
+            </h3>
+            <p className="mt-3 text-sm text-slate-500">
+              Accédez à votre code personnel
+            </p>
+
+            <div className="mt-8 flex items-center gap-1 text-sm font-bold text-[#1d4fed]">
+              Voir
+              <ChevronRight
+                size={17}
+                className="transition group-hover:translate-x-1"
+              />
+            </div>
+          </button>
+
+          {/* Historique */}
+          <button
+            onClick={() => navigate("/student/historique")}
+            className="group rounded-2xl border border-slate-200 bg-white p-7 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+          >
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-slate-50 text-slate-700">
+              <History size={28} />
+            </div>
+
+            <h3 className="mt-7 text-2xl font-bold text-slate-900">
+              Historique
+            </h3>
+            <p className="mt-3 text-sm text-slate-500">
+              Consultez vos réservations
+            </p>
+
+            <div className="mt-8 flex items-center gap-1 text-sm font-bold text-slate-700">
+              Consulter
+              <ChevronRight
+                size={17}
+                className="transition group-hover:translate-x-1"
+              />
+            </div>
+          </button>
+        </div>
+      </section>
+
+      {/* MENU DU JOUR */}
+      <section className="mt-10 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="flex items-center gap-4 border-b border-slate-100 pb-5">
+          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-green-50 text-[#08b94e]">
+            <Utensils size={28} />
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900">Menu du jour</h2>
+            <p className="text-sm text-slate-500">Lundi 26 Janvier</p>
+          </div>
+        </div>
+
+        <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-2">
+          {/* Déjeuner */}
+          <div>
+            <div
+              className="relative h-40 overflow-hidden rounded-xl bg-cover bg-center"
+              style={{
+                backgroundImage:
+                  "url('https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=900&q=80')",
+              }}
+            >
+              <div className="absolute inset-0 bg-black/35" />
+
+              <div className="absolute bottom-5 left-5 flex items-center gap-2 text-white">
+                <span className="h-3 w-3 rounded-full bg-[#08b94e]" />
+                <span className="font-bold">Déjeuner</span>
+              </div>
+
+              <div className="absolute bottom-4 right-4 rounded-lg bg-black/40 px-4 py-2 text-sm font-semibold text-white">
+                12:00 - 14:00
+              </div>
+            </div>
+
+            <ul className="mt-5 space-y-4 text-sm text-slate-600">
+              <li className="flex gap-3">
+                <span className="text-[#08b94e]">•</span> Soupe de légumes
+              </li>
+              <li className="flex gap-3">
+                <span className="text-[#08b94e]">•</span> Tajine de poulet
+              </li>
+              <li className="flex gap-3">
+                <span className="text-[#08b94e]">•</span> Salade verte
+              </li>
+              <li className="flex gap-3">
+                <span className="text-[#08b94e]">•</span> Fruits de saison
+              </li>
+            </ul>
+          </div>
+
+          {/* Dîner */}
+          <div>
+            <div
+              className="relative h-40 overflow-hidden rounded-xl bg-cover bg-center"
+              style={{
+                backgroundImage:
+                  "url('https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=900&q=80')",
+              }}
+            >
+              <div className="absolute inset-0 bg-black/35" />
+
+              <div className="absolute bottom-5 left-5 flex items-center gap-2 text-white">
+                <span className="h-3 w-3 rounded-full bg-[#3b82f6]" />
+                <span className="font-bold">Dîner</span>
+              </div>
+
+              <div className="absolute bottom-4 right-4 rounded-lg bg-black/40 px-4 py-2 text-sm font-semibold text-white">
+                19:00 - 21:00
+              </div>
+            </div>
+
+            <ul className="mt-5 space-y-4 text-sm text-slate-600">
+              <li className="flex gap-3">
+                <span className="text-[#3b82f6]">•</span> Salade marocaine
+              </li>
+              <li className="flex gap-3">
+                <span className="text-[#3b82f6]">•</span> Poisson grillé
+              </li>
+              <li className="flex gap-3">
+                <span className="text-[#3b82f6]">•</span> Riz
+              </li>
+              <li className="flex gap-3">
+                <span className="text-[#3b82f6]">•</span> Yaourt
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+};
+
+export default StudentDashboard;
