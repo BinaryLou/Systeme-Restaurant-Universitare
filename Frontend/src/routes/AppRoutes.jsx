@@ -1,17 +1,22 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 
-import StudentLogin from "../pages/auth/StudentLogin";
-import AdminLogin from "../pages/auth/AdminLogin";
 import ProtectedRoute from "./ProtectedRoute";
 
+// Student
+import StudentLogin from "../pages/auth/StudentLogin";
 import StudentLayout from "../layouts/StudentLayout";
-import AdminLayout from "../layouts/AdminLayout";
-import StaffLayout from "../layouts/StaffLayout";
+import StudentDashboard from "../pages/student/StudentDashboard";
+import StudentReservation from "../pages/student/StudentReservation";
 
+// Admin
+import AdminLogin from "../pages/auth/AdminLogin";
+import AdminLayout from "../layouts/AdminLayout";
+
+// Staff
+import StaffLayout from "../layouts/StaffLayout";
 import StaffPinAccess from "../pages/staff/StaffPinAccess";
 import StaffScan from "../pages/staff/StaffScan";
 
-import StudentDashboard from "../pages/student/StudentDashboard";
 
 const AdminDashboard = () => {
   return <h1>Admin Dashboard</h1>;
@@ -54,6 +59,7 @@ const AppRoutes = () => {
         <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
           <Route element={<StudentLayout />}>
             <Route path="/student/dashboard" element={<StudentDashboard />} />
+            <Route path="/student/reserver" element={<StudentReservation />} />
           </Route>
         </Route>
 
