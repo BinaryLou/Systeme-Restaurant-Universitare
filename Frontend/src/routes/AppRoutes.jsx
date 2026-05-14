@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
+
 import StudentLogin from "../pages/auth/StudentLogin";
 import AdminLogin from "../pages/auth/AdminLogin";
 import ProtectedRoute from "./ProtectedRoute";
@@ -18,12 +19,18 @@ const AdminDashboard = () => {
   return <h1>Admin Dashboard</h1>;
 };
 
-const StaffPage = () => {
-  return <h1>Staff Page</h1>;
-};
-
 const Unauthorized = () => {
   return <h1>Accès non autorisé</h1>;
+};
+
+const StaffScanGuard = () => {
+  const staffPin = sessionStorage.getItem("staffPin");
+
+  if (!staffPin) {
+    return <Navigate to="/staff/pin" replace />;
+  }
+
+  return <Outlet />;
 };
 
 const AppRoutes = () => {
@@ -36,12 +43,23 @@ const AppRoutes = () => {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
 
+        {/* Staff routes - sans JWT */}
+        <Route path="/staff/pin" element={<StaffPinAccess />} />
+
+        <Route element={<StaffScanGuard />}>
+          <Route element={<StaffLayout />}>
+            <Route path="/staff/scan" element={<StaffScan />} />
+          </Route>
+        </Route>
+
+        {/* Student routes */}
         <Route element={<ProtectedRoute allowedRoles={["USER"]} />}>
           <Route element={<StudentLayout />}>
             <Route path="/student/dashboard" element={<StudentDashboard />} />
           </Route>
         </Route>
 
+        {/* Admin routes */}
         <Route
           element={
             <ProtectedRoute allowedRoles={["ADMIN"]} loginPath="/admin/login" />
@@ -52,16 +70,7 @@ const AppRoutes = () => {
           </Route>
         </Route>
 
-        <Route element={<ProtectedRoute allowedRoles={["STAFF"]} />}>
-          <Route element={<StaffLayout />}>
-            <Route path="/staff/scan" element={<StaffPage />} />
-          </Route>
-        </Route>
-
         <Route path="*" element={<Navigate to="/login" replace />} />
-
-        <Route path="/staff/pin" element={<StaffPinAccess />} />
-        <Route path="/staff/scan" element={<StaffScan />} />  
       </Routes>
     </BrowserRouter>
   );
