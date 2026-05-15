@@ -5,15 +5,22 @@ import {
   CheckCircle,
   Clock,
   History,
+  Loader2,
+  Trash2,
   Utensils,
   XCircle,
 } from "lucide-react";
-import { getMyReservations } from "../../services/reservationApi";
+import {
+  cancelReservation,
+  getMyReservations,
+} from "../../services/reservationApi";
 
 const StudentHistory = () => {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [cancelLoadingId, setCancelLoadingId] = useState(null);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const fetchReservations = async () => {
     try {
@@ -35,6 +42,32 @@ const StudentHistory = () => {
   useEffect(() => {
     fetchReservations();
   }, []);
+
+  const handleCancelReservation = async (reservationId) => {
+    const confirmed = window.confirm(
+      "Voulez-vous vraiment annuler cette réservation ?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setCancelLoadingId(reservationId);
+      setError("");
+      setSuccessMessage("");
+
+      await cancelReservation(reservationId);
+
+      setSuccessMessage("Réservation annulée avec succès.");
+      await fetchReservations();
+    } catch (err) {
+      setError(
+        err?.response?.data?.message ||
+          "Impossible d'annuler cette réservation."
+      );
+    } finally {
+      setCancelLoadingId(null);
+    }
+  };
 
   const getStatusStyle = (status) => {
     switch (status) {
@@ -62,6 +95,10 @@ const StudentHistory = () => {
     }
   };
 
+  const canCancel = (reservation) => {
+    return reservation?.statut === "RESERVEE";
+  };
+
   const formatDate = (date) => {
     if (!date) return "-";
 
@@ -84,6 +121,24 @@ const StudentHistory = () => {
         </p>
       </div>
 
+      {successMessage && (
+        <div className="rounded-2xl border border-green-200 bg-green-50 p-4 text-green-700">
+          <div className="flex items-center gap-2">
+            <CheckCircle size={20} />
+            <span className="font-medium">{successMessage}</span>
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700">
+          <div className="flex items-center gap-2">
+            <AlertCircle size={20} />
+            <span className="font-medium">{error}</span>
+          </div>
+        </div>
+      )}
+
       {loading && (
         <div className="grid gap-4">
           {[1, 2, 3].map((item) => (
@@ -95,16 +150,7 @@ const StudentHistory = () => {
         </div>
       )}
 
-      {!loading && error && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-red-700">
-          <div className="flex items-center gap-2">
-            <AlertCircle size={20} />
-            <span className="font-medium">{error}</span>
-          </div>
-        </div>
-      )}
-
-      {!loading && !error && reservations.length === 0 && (
+      {!loading && reservations.length === 0 && (
         <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-500">
             <History size={30} />
@@ -120,7 +166,7 @@ const StudentHistory = () => {
         </div>
       )}
 
-      {!loading && !error && reservations.length > 0 && (
+      {!loading && reservations.length > 0 && (
         <div className="grid gap-4">
           {reservations.map((reservation) => (
             <div
@@ -154,13 +200,33 @@ const StudentHistory = () => {
                   </div>
                 </div>
 
-                <div
-                  className={`flex w-fit items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold ${getStatusStyle(
-                    reservation.statut
-                  )}`}
-                >
-                  {getStatusIcon(reservation.statut)}
-                  <span>{reservation.statut}</span>
+                <div className="flex flex-col gap-3 md:items-end">
+                  <div
+                    className={`flex w-fit items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold ${getStatusStyle(
+                      reservation.statut
+                    )}`}
+                  >
+                    {getStatusIcon(reservation.statut)}
+                    <span>{reservation.statut}</span>
+                  </div>
+
+                  {canCancel(reservation) && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleCancelReservation(reservation.id_reservation)
+                      }
+                      disabled={cancelLoadingId === reservation.id_reservation}
+                      className="flex w-fit items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {cancelLoadingId === reservation.id_reservation ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <Trash2 size={16} />
+                      )}
+                      Annuler
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
