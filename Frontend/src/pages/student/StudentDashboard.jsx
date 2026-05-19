@@ -22,34 +22,34 @@ const StudentDashboard = () => {
   const solde = student?.solde ?? 600;
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] px-8 py-8">
+    <div className="min-h-screen bg-[#f8fafc] px-4 py-6 lg:px-8 lg:py-8">
       {/* HERO */}
-      <section className="rounded-[18px] bg-[#1d4fed] px-12 py-10 text-white shadow-xl shadow-blue-900/20">
-        <div className="flex items-center justify-between gap-6">
+      <section className="rounded-[18px] bg-[#1d4fed] px-6 py-8 lg:px-12 lg:py-10 text-white shadow-xl shadow-blue-900/20">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 lg:gap-6">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-100">
+            <p className="text-[10px] lg:text-xs font-semibold uppercase tracking-[0.22em] text-blue-100">
               Tableau de bord étudiant
             </p>
 
-            <h1 className="mt-4 text-5xl font-bold tracking-tight">
+            <h1 className="mt-3 lg:mt-4 text-4xl lg:text-5xl font-bold tracking-tight">
               Bienvenue, {firstName} !
             </h1>
 
-            <p className="mt-5 text-lg text-blue-100">
+            <p className="mt-3 lg:mt-5 text-sm lg:text-lg text-blue-100">
               Gérez vos réservations de repas en quelques clics
             </p>
           </div>
 
-          <div className="flex min-w-[300px] items-center gap-5 rounded-2xl border border-white/20 bg-white/15 px-7 py-6 backdrop-blur">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/20">
-              <Wallet size={30} />
+          <div className="flex w-full lg:w-auto lg:min-w-[300px] items-center gap-4 lg:gap-5 rounded-2xl border border-white/20 bg-white/15 px-5 py-5 lg:px-7 lg:py-6 backdrop-blur">
+            <div className="flex h-12 w-12 lg:h-14 lg:w-14 shrink-0 items-center justify-center rounded-xl bg-white/20">
+              <Wallet className="h-6 w-6 lg:h-[30px] lg:w-[30px]" />
             </div>
 
             <div>
-              <p className="text-xs font-medium uppercase tracking-widest text-blue-100">
+              <p className="text-[10px] lg:text-xs font-medium uppercase tracking-widest text-blue-100">
                 Solde disponible
               </p>
-              <p className="mt-2 text-4xl font-bold">{solde} DH</p>
+              <p className="mt-1 lg:mt-2 text-3xl lg:text-4xl font-bold">{solde} DH</p>
             </div>
           </div>
         </div>

@@ -9,10 +9,6 @@ const StudentQrCode = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    fetchQrCode();
-  }, []);
-
   const fetchQrCode = async () => {
     try {
       setLoading(true);
@@ -29,6 +25,10 @@ const StudentQrCode = () => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    fetchQrCode();
+  }, []);
+
 
   const downloadPng = () => {
     if (!qrData?.qr_code_image) return;

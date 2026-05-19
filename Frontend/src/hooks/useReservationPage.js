@@ -23,6 +23,10 @@ export const useReservationPage = () => {
     const navigate = useNavigate();
     const { user, updateUser } = useAuth();
 
+    const savedAuth = JSON.parse(localStorage.getItem("ru_auth") || "null");
+    const savedUser = JSON.parse(localStorage.getItem("user") || "null");
+    const displayUser = user || savedAuth?.user || savedUser || {};
+
     const [currentMonth, setCurrentMonth] = useState(() => {
         const today = new Date();
         return new Date(today.getFullYear(), today.getMonth(), 1);
@@ -39,8 +43,13 @@ export const useReservationPage = () => {
     const [confirmLoading, setConfirmLoading] = useState(false);
     const [successData, setSuccessData] = useState(null);
     const [currentBalance, setCurrentBalance] = useState(
-        Number(user?.solde ?? user?.balance ?? 0)
+        Number(displayUser?.solde ?? displayUser?.balance ?? 0)
     );
+
+    useEffect(() => {
+        const solde = Number(displayUser?.solde ?? displayUser?.balance ?? 0);
+        setCurrentBalance(solde);
+    }, [displayUser?.solde, displayUser?.balance]);
 
     const mealPrice = 2;
 
