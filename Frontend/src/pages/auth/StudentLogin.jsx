@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { User, Lock, Eye, EyeOff } from "lucide-react";
-import { loginStudent } from "../../api/authApi";
+import { useAuth } from "../../hooks/useAuth";
 import logoRU from "../../assets/logo-ru.png";
 
 const StudentLogin = () => {
+  const { loginAsStudent } = useAuth();
   const [formData, setFormData] = useState({
     apogee: "",
     password: "",
@@ -32,10 +33,7 @@ const StudentLogin = () => {
     try {
       setLoading(true);
 
-      const result = await loginStudent(formData);
-
-      localStorage.setItem("accessToken", result.data.accessToken);
-      localStorage.setItem("user", JSON.stringify(result.data.user));
+      await loginAsStudent(formData);
 
       window.location.href = "/student/dashboard";
     } catch (err) {

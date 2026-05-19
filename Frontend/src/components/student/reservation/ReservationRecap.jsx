@@ -11,11 +11,6 @@ const ReservationRecap = ({ reservation }) => {
       </div>
 
       <div className="p-6">
-        {reservation.error && (
-          <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
-            {reservation.error}
-          </div>
-        )}
 
         <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">
           Dates sélectionnées

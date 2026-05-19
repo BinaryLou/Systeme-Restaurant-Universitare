@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { changePassword } from "../../api/authApi";
+import { toast } from "react-hot-toast";
 import { 
   User, 
   Wallet, 
@@ -9,13 +10,15 @@ import {
   AlertCircle, 
   CheckCircle2, 
   Eye, 
-  EyeOff 
+  EyeOff,
+  Loader2
 } from "lucide-react";
 
 const StudentProfile = () => {
   const { user, logout } = useAuth();
   
-  const student = user || JSON.parse(localStorage.getItem("user") || "null");
+  const savedAuth = JSON.parse(localStorage.getItem("ru_auth") || "null");
+  const student = user || savedAuth?.user || JSON.parse(localStorage.getItem("user") || "null");
   const firstName = student?.prenom || "Mohammed";
   const lastName = student?.nom || "ALAMI";
   const apogee = student?.apogee || "20220001";
@@ -33,12 +36,10 @@ const StudentProfile = () => {
     confirm: false
   });
 
-  const [status, setStatus] = useState({ type: "", message: "" });
   const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setStatus({ type: "", message: "" });
   };
 
   const togglePasswordVisibility = (field) => {
@@ -49,12 +50,12 @@ const StudentProfile = () => {
     e.preventDefault();
     
     if (formData.newPassword !== formData.confirmPassword) {
-      setStatus({ type: "error", message: "Les mots de passe ne correspondent pas." });
+      toast.error("Les mots de passe ne correspondent pas.");
       return;
     }
 
     if (formData.newPassword.length < 8) {
-      setStatus({ type: "error", message: "Le nouveau mot de passe doit contenir au moins 8 caractères." });
+      toast.error("Le nouveau mot de passe doit contenir au moins 8 caractères.");
       return;
     }
 
@@ -66,13 +67,10 @@ const StudentProfile = () => {
         confirm_password: formData.confirmPassword
       });
       
-      setStatus({ type: "success", message: "Mot de passe mis à jour avec succès !" });
+      toast.success("Mot de passe mis à jour avec succès !");
       setFormData({ oldPassword: "", newPassword: "", confirmPassword: "" });
     } catch (error) {
-      setStatus({ 
-        type: "error", 
-        message: error.message || "Une erreur est survenue lors de la mise à jour." 
-      });
+      toast.error(error.message || "Une erreur est survenue lors de la mise à jour.");
     } finally {
       setLoading(false);
     }
@@ -126,14 +124,7 @@ const StudentProfile = () => {
               </div>
             </div>
 
-            {status.message && (
-              <div className={`mb-6 p-4 rounded-xl flex items-start gap-3 ${status.type === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
-                {status.type === 'error' ? <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" /> : <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />}
-                <p className="text-sm font-medium">{status.message}</p>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5 mt-6">
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Ancien mot de passe</label>
                 <div className="relative">
@@ -192,8 +183,9 @@ const StudentProfile = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full sm:w-auto rounded-xl bg-blue-600 px-8 py-3.5 text-sm font-bold text-white shadow-md hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500/30 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-8 py-3.5 text-sm font-bold text-white shadow-md hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-500/30 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
                 >
+                  {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                   {loading ? "Mise à jour en cours..." : "Mettre à jour le mot de passe"}
                 </button>
               </div>

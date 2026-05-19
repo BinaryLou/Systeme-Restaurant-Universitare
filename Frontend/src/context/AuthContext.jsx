@@ -60,21 +60,30 @@ export function AuthProvider({ children }) {
     };
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(authData));
+    localStorage.setItem("user", JSON.stringify(user));
     setAccessToken(token);
     setAuth(authData);
   };
 
   const updateUser = (updatedUserData) => {
     setAuth((prevAuth) => {
+      const baseUser = prevAuth.user || JSON.parse(localStorage.getItem("user") || "null");
+      const updatedUserObj = baseUser
+        ? {
+            ...baseUser,
+            ...updatedUserData,
+          }
+        : {
+            ...updatedUserData,
+          };
+
       const updatedAuth = {
         ...prevAuth,
-        user: {
-          ...prevAuth.user,
-          ...updatedUserData,
-        },
+        user: updatedUserObj,
       };
 
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedAuth));
+      localStorage.setItem("user", JSON.stringify(updatedUserObj));
       return updatedAuth;
     });
   };
@@ -137,6 +146,7 @@ export function AuthProvider({ children }) {
     }
 
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem("user");
     clearAccessToken();
 
     setAuth({

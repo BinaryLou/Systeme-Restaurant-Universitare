@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getMenuByDate } from "../services/menuApi";
 import { createReservation } from "../services/reservationApi";
 import { useAuth } from "./useAuth";
+import { toast } from "react-hot-toast";
 
 const SERVICES = [
     {
@@ -39,7 +40,6 @@ export const useReservationPage = () => {
     ]);
     const [menuCache, setMenuCache] = useState({});
     const [hoveredDate, setHoveredDate] = useState(null);
-    const [error, setError] = useState("");
     const [confirmLoading, setConfirmLoading] = useState(false);
     const [successData, setSuccessData] = useState(null);
     const [currentBalance, setCurrentBalance] = useState(
@@ -202,23 +202,21 @@ export const useReservationPage = () => {
 
         if (selectedDates.includes(dateKey)) {
             setSelectedDates((prev) => prev.filter((item) => item !== dateKey));
-            setError("");
             return;
         }
 
         const menuData = await fetchMenuForDate(dateKey);
 
         if (!menuData) {
-            setError("Aucun menu disponible pour cette date.");
+            toast.error("Aucun menu disponible pour cette date.");
             return;
         }
 
         if (menuData.is_closed) {
-            setError("Restaurant fermé ce jour.");
+            toast.error("Restaurant fermé ce jour.");
             return;
         }
 
-        setError("");
         setSelectedDates((prev) => [...prev, dateKey]);
     };
 
@@ -231,8 +229,6 @@ export const useReservationPage = () => {
     };
 
     const selectAllAvailable = async () => {
-        setError("");
-
         const dates = getDaysInMonth().filter((date) => date && isDateAvailable(date));
         const validDates = [];
 
@@ -250,7 +246,6 @@ export const useReservationPage = () => {
 
     const clearSelection = () => {
         setSelectedDates([]);
-        setError("");
     };
 
     const previousMonth = () => {
@@ -273,15 +268,14 @@ export const useReservationPage = () => {
     const handleConfirmReservation = async () => {
         try {
             setConfirmLoading(true);
-            setError("");
 
             if (selectedDates.length === 0) {
-                setError("Veuillez sélectionner au moins une date.");
+                toast.error("Veuillez sélectionner au moins une date.");
                 return;
             }
 
             if (selectedServices.length === 0) {
-                setError("Veuillez sélectionner au moins un service.");
+                toast.error("Veuillez sélectionner au moins un service.");
                 return;
             }
 
@@ -325,14 +319,14 @@ export const useReservationPage = () => {
                             err.message ||
                             "Erreur lors de la confirmation.";
 
-                        setError(`${dateKey} - ${service.label} : ${message}`);
+                        toast.error(`${dateKey} - ${service.label} : ${message}`);
                         return;
                     }
                 }
             }
 
             if (results.length === 0) {
-                setError("Aucun service disponible pour les dates sélectionnées.");
+                toast.error("Aucun service disponible pour les dates sélectionnées.");
                 return;
             }
 
@@ -351,7 +345,6 @@ export const useReservationPage = () => {
         selectedServices,
         menuCache,
         hoveredDate,
-        error,
         confirmLoading,
         successData,
         mealPrice,
