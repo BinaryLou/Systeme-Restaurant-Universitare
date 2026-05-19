@@ -1,4 +1,4 @@
-import { Outlet, NavLink } from "react-router-dom";
+import { Outlet, NavLink, Link } from "react-router-dom";
 import {
   Home,
   CalendarPlus,
@@ -25,10 +25,34 @@ const StudentLayout = () => {
   );
 
   const menuItems = [
-    { label: "Accueil", path: "/student/dashboard", icon: Home },
-    { label: "Réserver", path: "/student/reserver", icon: CalendarPlus },
-    { label: "QR Code", path: "/student/qrcode", icon: QrCode },
-    { label: "Historique", path: "/student/historique", icon: History },
+    { 
+      label: "Accueil", 
+      path: "/student/dashboard", 
+      icon: Home,
+      activeColor: "text-blue-600 bg-blue-50",
+      indicatorColor: "bg-blue-600"
+    },
+    { 
+      label: "Réserver", 
+      path: "/student/reserver", 
+      icon: CalendarPlus,
+      activeColor: "text-green-600 bg-green-50",
+      indicatorColor: "bg-green-600"
+    },
+    { 
+      label: "QR Code", 
+      path: "/student/qrcode", 
+      icon: QrCode,
+      activeColor: "text-blue-600 bg-blue-50",
+      indicatorColor: "bg-blue-600"
+    },
+    { 
+      label: "Historique", 
+      path: "/student/historique", 
+      icon: History,
+      activeColor: "text-blue-600 bg-blue-50",
+      indicatorColor: "bg-blue-600"
+    },
   ];
 
   const handleLogout = async () => {
@@ -37,12 +61,35 @@ const StudentLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
-      <aside className="fixed left-0 top-0 h-screen w-72 bg-white border-r border-slate-200 flex flex-col justify-between">
+    <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row">
+      {/* Mobile Header */}
+      <header className="lg:hidden sticky top-0 z-50 bg-white shadow-sm border-b border-slate-100 px-4 sm:px-5 py-3 flex items-center justify-between gap-2">
+        <Link to="/student/dashboard" className="flex items-center gap-3 shrink-1 min-w-0 hover:opacity-80 transition-opacity">
+          <img
+            src={logoRU}
+            alt="Restaurant Universitaire"
+            className="w-11 h-11 object-contain shrink-0"
+          />
+          <span className="text-slate-900 font-bold text-[14px] sm:text-[15px] tracking-tight truncate">
+            Restaurant Universitaire
+          </span>
+        </Link>
+        
+        <button
+          onClick={handleLogout}
+          className="w-10 h-10 shrink-0 flex items-center justify-center bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"
+          aria-label="Se déconnecter"
+        >
+          <User size={20} strokeWidth={2.5} />
+        </button>
+      </header>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-72 bg-white border-r border-slate-200 flex-col justify-between z-40">
         <div>
           {/* Header / Logo */}
           <div className="h-28 px-5 border-b border-slate-100 flex items-center justify-center">
-            <div className="flex items-center gap-4">
+            <Link to="/student/dashboard" className="flex items-center gap-4 hover:opacity-80 transition-opacity">
               <img
                 src={logoRU}
                 alt="Restaurant Universitaire"
@@ -57,7 +104,7 @@ const StudentLayout = () => {
                   Universitaire
                 </h2>
               </div>
-            </div>
+            </Link>
           </div>
 
           {/* Navigation */}
@@ -122,9 +169,42 @@ const StudentLayout = () => {
         </div>
       </aside>
 
-      <main className="ml-72 flex-1 p-8">
+      {/* Main Content */}
+      <main className="flex-1 w-full lg:ml-72 p-4 lg:p-8 pb-24 lg:pb-8">
         <Outlet />
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 px-2 py-2 z-50 flex justify-around items-center pb-safe">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                `relative flex flex-col items-center gap-1 p-2 w-[72px] rounded-2xl transition-all duration-200 ${
+                  isActive
+                    ? item.activeColor
+                    : "text-slate-400 hover:text-slate-600"
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <div 
+                      className={`absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 rounded-b-md ${item.indicatorColor}`} 
+                    />
+                  )}
+                  <Icon size={24} className={isActive ? "stroke-[2.5px]" : "stroke-2"} />
+                  <span className="text-[10px] font-semibold">{item.label}</span>
+                </>
+              )}
+            </NavLink>
+          );
+        })}
+      </nav>
     </div>
   );
 };
