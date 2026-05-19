@@ -3,6 +3,7 @@ import { Download, QrCode, CheckCircle, AlertCircle } from "lucide-react";
 import jsPDF from "jspdf";
 import { getStudentQrCode } from "../../api/studentApi";
 import logoRU from "../../assets/logo-ru.png";
+import { toast } from "react-hot-toast";
 
 const StudentQrCode = () => {
   const [qrData, setQrData] = useState(null);
@@ -31,21 +32,33 @@ const StudentQrCode = () => {
 
 
   const downloadPng = () => {
-    if (!qrData?.qr_code_image) return;
+    if (!qrData?.qr_code_image) {
+      toast.error("Impossible de télécharger le QR Code.");
+      return;
+    }
 
-    const link = document.createElement("a");
-    link.href = qrData.qr_code_image;
-    link.download = `qr-code-${qrData.user?.apogee || "student"}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      const link = document.createElement("a");
+      link.href = qrData.qr_code_image;
+      link.download = `qr-code-${qrData.user?.apogee || "student"}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success("QR Code téléchargé en PNG !");
+    } catch (err) {
+      toast.error("Erreur lors du téléchargement PNG.");
+    }
   };
 
   const downloadPdf = () => {
-    if (!qrData?.qr_code_image) return;
+    if (!qrData?.qr_code_image) {
+      toast.error("Impossible de télécharger le QR Code.");
+      return;
+    }
 
-    const doc = new jsPDF("p", "mm", "a4");
-    const pageWidth = doc.internal.pageSize.getWidth();
+    try {
+      const doc = new jsPDF("p", "mm", "a4");
+      const pageWidth = doc.internal.pageSize.getWidth();
 
     // Background
     doc.setFillColor(248, 251, 255);
@@ -133,6 +146,10 @@ const StudentQrCode = () => {
     );
 
     doc.save(`qr-code-${qrData.user?.apogee || "student"}.pdf`);
+    toast.success("QR Code téléchargé en PDF !");
+    } catch (err) {
+      toast.error("Erreur lors du téléchargement PDF.");
+    }
   };
 
   if (loading) {

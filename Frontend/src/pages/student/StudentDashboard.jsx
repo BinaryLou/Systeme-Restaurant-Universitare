@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   CalendarDays,
   ChevronRight,
@@ -9,17 +10,45 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { getMenuByDate } from "../../services/menuApi";
+import { toast } from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-
-  const student = user || JSON.parse(localStorage.getItem("user") || "null");
+  const savedAuth = JSON.parse(localStorage.getItem("ru_auth") || "null");
+  const student = user || savedAuth?.user || JSON.parse(localStorage.getItem("user") || "null");
 
   const firstName = student?.prenom || "Mohammed";
   const lastName = student?.nom || "ALAMI";
   const apogee = student?.apogee || "20220001";
   const solde = student?.solde ?? 600;
+
+  const [loadingMenu, setLoadingMenu] = useState(true);
+  const [hasMenu, setHasMenu] = useState(false);
+
+  useEffect(() => {
+    const fetchMenu = async () => {
+      try {
+        setLoadingMenu(true);
+        const today = new Date().toISOString().split("T")[0];
+        // Fetch the menu for today
+        await getMenuByDate(today);
+        setHasMenu(true);
+      } catch (err) {
+        if (err.status !== 404) {
+          toast.error("Impossible de charger le menu du jour.");
+        }
+        setHasMenu(false);
+      } finally {
+        setLoadingMenu(false);
+      }
+    };
+    fetchMenu();
+  }, []);
+
+  const todayStr = new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
 
   return (
     <div className="min-h-screen bg-[#f8fafc] px-4 py-6 lg:px-8 lg:py-8">
@@ -153,11 +182,24 @@ const StudentDashboard = () => {
 
           <div>
             <h2 className="text-2xl font-bold text-slate-900">Menu du jour</h2>
-            <p className="text-sm text-slate-500">Lundi 26 Janvier</p>
+            <p className="text-sm text-slate-500 capitalize">{todayStr}</p>
           </div>
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-2">
+        {loadingMenu ? (
+          <div className="mt-8 flex items-center justify-center py-12">
+            <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+          </div>
+        ) : !hasMenu ? (
+          <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 py-16 text-slate-500">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+              <Utensils size={32} />
+            </div>
+            <p className="text-lg font-bold text-slate-800">Aucun menu programmé</p>
+            <p className="mt-1 text-sm text-slate-500">Le menu du jour n'est pas encore disponible.</p>
+          </div>
+        ) : (
+          <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-2">
           {/* Déjeuner */}
           <div>
             <div
@@ -232,6 +274,7 @@ const StudentDashboard = () => {
             </ul>
           </div>
         </div>
+        )}
       </section>
     </div>
   );

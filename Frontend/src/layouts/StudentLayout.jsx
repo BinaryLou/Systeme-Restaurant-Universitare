@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import logoRU from "../assets/logo-ru.png";
 import { useAuth } from "../hooks/useAuth";
+import { Toaster } from "react-hot-toast";
 
 const StudentLayout = () => {
   const { user, logout } = useAuth();
@@ -62,6 +63,7 @@ const StudentLayout = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row">
+      <Toaster position="top-center" reverseOrder={false} />
       {/* Mobile Header */}
       <header className="lg:hidden sticky top-0 z-50 bg-white shadow-sm border-b border-slate-100 px-4 sm:px-5 py-3 flex items-center justify-between gap-2">
         <Link to="/student/dashboard" className="flex items-center gap-3 shrink-1 min-w-0 hover:opacity-80 transition-opacity">
