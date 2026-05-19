@@ -9,6 +9,7 @@ import StudentDashboard from "../pages/student/StudentDashboard";
 import StudentHistory from "../pages/student/StudentHistory";
 import StudentQrCode from "../pages/student/StudentQrCode";
 import StudentReservation from "../pages/student/StudentReservation";
+import StudentProfile from "../pages/student/StudentProfile";
 
 // Admin
 import AdminLogin from "../pages/auth/AdminLogin";
@@ -64,6 +65,7 @@ const AppRoutes = () => {
             <Route path="/student/reserver" element={<StudentReservation />} />
             <Route path="/student/historique" element={<StudentHistory />} />
             <Route path="/student/qrcode" element={<StudentQrCode />} />
+            <Route path="/student/profil" element={<StudentProfile />} />
           </Route>
         </Route>
 

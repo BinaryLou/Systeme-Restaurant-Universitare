@@ -75,13 +75,22 @@ const StudentLayout = () => {
           </span>
         </Link>
         
-        <button
-          onClick={handleLogout}
-          className="w-10 h-10 shrink-0 flex items-center justify-center bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"
-          aria-label="Se déconnecter"
-        >
-          <User size={20} strokeWidth={2.5} />
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/student/profil"
+            className="w-10 h-10 shrink-0 flex items-center justify-center bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition"
+            aria-label="Mon Profil"
+          >
+            <User size={20} strokeWidth={2.5} />
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="w-10 h-10 shrink-0 flex items-center justify-center bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition"
+            aria-label="Se déconnecter"
+          >
+            <LogOut size={20} strokeWidth={2.5} />
+          </button>
+        </div>
       </header>
 
       {/* Desktop Sidebar */}
@@ -134,7 +143,7 @@ const StudentLayout = () => {
 
         {/* Bottom user */}
         <div className="p-4 border-t border-slate-100">
-          <div className="bg-slate-50 rounded-2xl p-4 mb-4 border border-slate-100">
+          <Link to="/student/profil" className="block bg-slate-50 rounded-2xl p-4 mb-4 border border-slate-100 hover:bg-slate-100 transition cursor-pointer">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
                 <User size={22} />
@@ -157,7 +166,7 @@ const StudentLayout = () => {
                 {displaySolde.toFixed(2)} DH
               </strong>
             </div>
-          </div>
+          </Link>
 
           <button
             onClick={handleLogout}

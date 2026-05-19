@@ -39,7 +39,7 @@ const StudentLogin = () => {
 
       window.location.href = "/student/dashboard";
     } catch (err) {
-      setError(err.response?.data?.message || "Identifiants invalides.");
+      setError(err.message || "Identifiants invalides.");
     } finally {
       setLoading(false);
     }
