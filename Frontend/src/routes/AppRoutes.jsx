@@ -18,7 +18,7 @@ import AdminLayout from "../layouts/AdminLayout";
 // Staff
 import StaffLayout from "../layouts/StaffLayout";
 import StaffPinAccess from "../pages/staff/StaffPinAccess";
-import StaffScan from "../pages/staff/StaffScan";
+import ScanDashboard from "../pages/staff/ScanDashboard";
 
 
 const AdminDashboard = () => {
@@ -54,7 +54,7 @@ const AppRoutes = () => {
 
         <Route element={<StaffScanGuard />}>
           <Route element={<StaffLayout />}>
-            <Route path="/staff/scan" element={<StaffScan />} />
+            <Route path="/staff/scan" element={<ScanDashboard />} />
           </Route>
         </Route>
 
