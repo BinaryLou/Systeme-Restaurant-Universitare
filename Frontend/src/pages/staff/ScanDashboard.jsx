@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { CheckCircle2, XCircle, Clock, Layers, UserCheck, QrCode, Camera } from "lucide-react";
 import QRScanner from "../../components/staff/QRScanner";
-import { validateTicket } from "../../api/staffApi";
+import { validateTicket } from "../../api/scanApi";
 
 const ScanDashboard = () => {
   const pin = sessionStorage.getItem("staffPin");
@@ -16,6 +16,7 @@ const ScanDashboard = () => {
     return saved ? parseInt(saved, 10) : 0;
   });
   const [scanHistory, setScanHistory] = useState([]);
+  const [isScanLocked, setIsScanLocked] = useState(false);
 
   // Audio synthesis feedback (success/error sounds)
   const playAudioFeedback = (type) => {
@@ -52,10 +53,21 @@ const ScanDashboard = () => {
   };
 
   const handleScanSuccess = async (decodedText) => {
-    if (validationState !== "idle") return;
+    if (validationState !== "idle" || isScanLocked) return;
+
+    setIsScanLocked(true);
+    const scanStart = Date.now();
 
     setValidationState("loading");
     setErrorMsg("");
+
+    const releaseLock = () => {
+      const elapsed = Date.now() - scanStart;
+      const remaining = Math.max(0, 2000 - elapsed);
+      setTimeout(() => {
+        setIsScanLocked(false);
+      }, remaining);
+    };
 
     try {
       const response = await validateTicket(decodedText, pin);
@@ -85,6 +97,7 @@ const ScanDashboard = () => {
         ...prev.slice(0, 4),
       ]);
 
+      releaseLock();
     } catch (err) {
       console.error("Scan validation error:", err);
       const message = err.message || "Une erreur est survenue lors de la validation.";
@@ -114,6 +127,8 @@ const ScanDashboard = () => {
         },
         ...prev.slice(0, 4),
       ]);
+
+      releaseLock();
     }
   };
 
@@ -173,7 +188,7 @@ const ScanDashboard = () => {
             {isScanningActive ? (
               <QRScanner
                 onScanSuccess={handleScanSuccess}
-                paused={validationState !== "idle"}
+                paused={validationState !== "idle" || isScanLocked}
               />
             ) : (
               <div className="flex flex-col items-center justify-center aspect-square rounded-3xl bg-slate-50/50 border border-dashed border-slate-200 p-6 text-center max-w-[480px] mx-auto w-full">
