@@ -12,16 +12,4 @@ export const verifyStaffPin = async (pin) => {
   );
 
   return response.data;
-};
-
-export const validateTicket = async (qrCode, pin) => {
-  return await axiosClient.post(
-    "/scan",
-    { qr_code: qrCode },
-    {
-      headers: {
-        "x-scan-pin": pin,
-      },
-    }
-  );
-};
+};
