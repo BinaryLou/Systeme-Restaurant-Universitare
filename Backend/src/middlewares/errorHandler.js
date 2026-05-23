@@ -25,10 +25,16 @@ const errorHandler = (err, req, res, next) => {
     return next(err);
   }
 
-  return res.status(statusCode).json({
+  const response = {
     status: 'error',
     message: safeMessage
-  });
+  };
+
+  if (err.data) {
+    response.data = err.data;
+  }
+
+  return res.status(statusCode).json(response);
 };
 
 module.exports = errorHandler;

@@ -52,8 +52,18 @@ const processScanQrCode = async ({ qrCode }) => {
 
   const currentService = await reservationModel.findCurrentServiceByTime(timeOnly);
 
+  const userData = {
+    id_utilisateur: user.id_utilisateur,
+    apogee: user.apogee,
+    nom: user.nom,
+    prenom: user.prenom,
+    email: user.email,
+  };
+
   if (!currentService) {
-    throw new AppError('Aucun service actif pour le moment.', 400);
+    const error = new AppError('Aucun service actif pour le moment.', 400);
+    error.data = { user: userData };
+    throw error;
   }
 
   const connection = await reservationModel.getConnection();
@@ -70,19 +80,27 @@ const processScanQrCode = async ({ qrCode }) => {
       );
 
     if (!reservation) {
-      throw new AppError('Aucune réservation valide trouvée pour aujourd’hui.', 404);
+      const error = new AppError('Aucune réservation valide trouvée pour aujourd’hui.', 404);
+      error.data = { user: userData };
+      throw error;
     }
 
     if (reservation.statut === reservationModel.RESERVATION_STATUS.USED) {
-      throw new AppError('Ticket déjà utilisé.', 409);
+      const error = new AppError('Ticket déjà utilisé.', 409);
+      error.data = { user: userData };
+      throw error;
     }
 
     if (reservation.statut === reservationModel.RESERVATION_STATUS.CANCELED) {
-      throw new AppError('Cette réservation est annulée.', 400);
+      const error = new AppError('Cette réservation est annulée.', 400);
+      error.data = { user: userData };
+      throw error;
     }
 
     if (reservation.statut !== reservationModel.RESERVATION_STATUS.RESERVED) {
-      throw new AppError('Statut de réservation invalide pour le scan.', 400);
+      const error = new AppError('Statut de réservation invalide pour le scan.', 400);
+      error.data = { user: userData };
+      throw error;
     }
 
     const updateResult =
