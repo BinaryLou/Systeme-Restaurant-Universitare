@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { CheckCircle2, XCircle, Clock, Layers, UserCheck, QrCode, Camera } from "lucide-react";
 import QRScanner from "../../components/staff/QRScanner";
 import { validateTicket } from "../../api/scanApi";
+import ScanResultOverlay from "../../components/staff/ScanResultOverlay";
+
+const OVERLAY_DURATION = 2000;
 
 const ScanDashboard = () => {
   const pin = sessionStorage.getItem("staffPin");
@@ -136,7 +139,7 @@ const ScanDashboard = () => {
     if (validationState === "success" || validationState === "error") {
       const timer = setTimeout(() => {
         handleReset();
-      }, 4000);
+      }, OVERLAY_DURATION);
       return () => clearTimeout(timer);
     }
   }, [validationState]);
@@ -150,6 +153,16 @@ const ScanDashboard = () => {
 
   return (
     <>
+      {(validationState === "success" || validationState === "error") && (
+        <ScanResultOverlay
+          status={validationState}
+          studentInfo={studentInfo}
+          serviceInfo={serviceInfo}
+          errorMsg={errorMsg}
+          onClose={handleReset}
+          duration={OVERLAY_DURATION}
+        />
+      )}
       <style>
         {`
           @keyframes pulseScale {
