@@ -15,6 +15,7 @@ import StudentProfile from "../pages/student/StudentProfile";
 // Admin
 import AdminLogin from "../pages/auth/AdminLogin";
 import AdminLayout from "../layouts/AdminLayout";
+import AdminDashboard from "../pages/admin/AdminDashboard";
 
 // Staff
 import StaffLayout from "../layouts/StaffLayout";
@@ -22,9 +23,7 @@ import StaffPinAccess from "../pages/staff/StaffPinAccess";
 import ScanDashboard from "../pages/staff/ScanDashboard";
 
 
-const AdminDashboard = () => {
-  return <h1>Admin Dashboard</h1>;
-};
+
 
 const Unauthorized = () => {
   return <h1>Accès non autorisé</h1>;
