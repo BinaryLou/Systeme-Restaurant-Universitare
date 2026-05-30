@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { getWeeklyMenus, upsertWeeklyMenu, publishWeeklyMenu } from '../../api/menuApi';
 import WeeklyMenuForm from '../../components/admin/WeeklyMenuForm';
 import MenuCalendarPreview from '../../components/admin/MenuCalendarPreview';
+import MenuExceptionModal from '../../components/admin/MenuExceptionModal';
 
 const DAYS = [
   { id: 1, name: "Lundi" },
@@ -21,6 +22,21 @@ const MenuManagement = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [refreshCalendar, setRefreshCalendar] = useState(0);
+
+  // Exception Modal State
+  const [exceptionDate, setExceptionDate] = useState(null);
+  const [isExceptionModalOpen, setIsExceptionModalOpen] = useState(false);
+
+  const handleDateClick = (dayObj) => {
+    setExceptionDate(dayObj.date);
+    setIsExceptionModalOpen(true);
+  };
+
+  const handleSaveExceptionSuccess = () => {
+    setIsExceptionModalOpen(false);
+    setRefreshCalendar(prev => prev + 1);
+    fetchMenus();
+  };
 
   const fetchMenus = async () => {
     setLoading(true);
@@ -180,10 +196,20 @@ const MenuManagement = () => {
 
         {/* Right Column - Calendar */}
         <div className="lg:col-span-1 h-full">
-          <MenuCalendarPreview refreshTrigger={refreshCalendar} />
+          <MenuCalendarPreview 
+            refreshTrigger={refreshCalendar} 
+            onDateClick={handleDateClick} 
+          />
         </div>
 
       </div>
+
+      <MenuExceptionModal
+        isOpen={isExceptionModalOpen}
+        date={exceptionDate}
+        onClose={() => setIsExceptionModalOpen(false)}
+        onSaveSuccess={handleSaveExceptionSuccess}
+      />
     </div>
   );
 };
