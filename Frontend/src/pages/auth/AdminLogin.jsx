@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import logoRU from "../../assets/logo-ru.png";
 
@@ -229,12 +229,12 @@ const AdminLogin = () => {
             </div>
 
             <div className="text-right mb-5">
-              <button
-                type="button"
+              <Link
+                to="/forgot-password"
                 className="text-blue-600 font-semibold text-sm hover:text-blue-700 hover:underline transition"
               >
                 Mot de passe oublié ?
-              </button>
+              </Link>
             </div>
 
             {error && (

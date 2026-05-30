@@ -13,6 +13,7 @@ const {
 const { createRefreshToken , deleteExpiredTokens: deleteExpiredRefreshTokens,
   revokeAllUserRefreshTokens,} = require("../models/refreshTokenModel");
 const passwordResetTokenModel = require("../models/passwordResetTokenModel");
+const { sendResetPasswordEmail } = require("./emailService");
 const AppError = require("../utils/AppError");
 
 const loginUser = async ({ apogee, password }) => {
@@ -82,13 +83,18 @@ const RESET_TOKEN_TTL_MINUTES = Number(
   process.env.RESET_TOKEN_TTL_MINUTES || 15
 );
 
-const forgotPassword = async (email) => {
-  const normalizedEmail = String(email || "").trim().toLowerCase();
+const forgotPassword = async (identifier) => {
+  const normalizedIdentifier = String(identifier || "").trim();
   
   await deleteExpiredRefreshTokens();
   await passwordResetTokenModel.deleteExpiredTokens();
 
-  const user = await findUserByEmail(normalizedEmail);
+  let user = null;
+  if (normalizedIdentifier.includes('@')) {
+    user = await findUserByEmail(normalizedIdentifier.toLowerCase());
+  } else {
+    user = await findUserByApogee(normalizedIdentifier);
+  }
 
   // Toujours retourner un message générique
   if (!user) {
@@ -121,6 +127,9 @@ const forgotPassword = async (email) => {
     );
 
     await connection.commit();
+
+    // Envoi de l'email avec le rawToken (qui servira pour construire le lien)
+    await sendResetPasswordEmail(user.email, rawToken);
 
     return {
       dev_reset_token:
