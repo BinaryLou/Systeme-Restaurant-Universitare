@@ -41,7 +41,7 @@ const StaffPinAccess = () => {
       await verifyStaffPin(pin);
 
       sessionStorage.setItem("staffPin", pin);
-      navigate("/staff/scan", { replace: true });
+      navigate("/staff/dashboard", { replace: true });
     } catch (err) {
       setError(
         err.response?.data?.message ||

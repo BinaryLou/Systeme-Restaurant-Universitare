@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 
 import ProtectedRoute from "./ProtectedRoute";
+import StaffRouteGuard from "./StaffRouteGuard";
 
 // Student
 import StudentLogin from "../pages/auth/StudentLogin";
@@ -29,15 +30,7 @@ const Unauthorized = () => {
   return <h1>Accès non autorisé</h1>;
 };
 
-const StaffScanGuard = () => {
-  const staffPin = sessionStorage.getItem("staffPin");
 
-  if (!staffPin) {
-    return <Navigate to="/staff/pin" replace />;
-  }
-
-  return <Outlet />;
-};
 
 const AppRoutes = () => {
   return (
@@ -52,9 +45,10 @@ const AppRoutes = () => {
         {/* Staff routes - sans JWT */}
         <Route path="/staff/pin" element={<StaffPinAccess />} />
 
-        <Route element={<StaffScanGuard />}>
+        <Route element={<StaffRouteGuard />}>
           <Route element={<StaffLayout />}>
-            <Route path="/staff/scan" element={<ScanDashboard />} />
+            <Route path="/staff/dashboard" element={<ScanDashboard />} />
+            <Route path="/staff/scan" element={<Navigate to="/staff/dashboard" replace />} />
           </Route>
         </Route>
 
