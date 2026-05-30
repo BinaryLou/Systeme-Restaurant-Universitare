@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Loader2, AlertCircle } from 'lucide-react';
 import { getMenusCalendar } from '../../api/menuApi';
 
-const MenuCalendarPreview = ({ refreshTrigger }) => {
+const MenuCalendarPreview = ({ refreshTrigger, onDateClick }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarData, setCalendarData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -41,23 +41,38 @@ const MenuCalendarPreview = ({ refreshTrigger }) => {
     const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0 = Sunday
     
     const blanks = Array.from({ length: firstDayOfMonth }, (_, i) => (
-      <div key={`blank-${i}`} className="h-10"></div>
+      <div key={`blank-${i}`} className="h-11"></div>
     ));
 
     const days = calendarData.days.map((dayObj, i) => {
       const dayNum = i + 1;
       let dotColor = null;
-      let bgColor = "bg-white";
+      let cellStyles = "bg-white border-transparent hover:border-slate-200 text-slate-700";
       
-      if (dayObj.type === "standard") dotColor = "bg-blue-500";
-      if (dayObj.type === "exception") dotColor = "bg-orange-500";
-      if (dayObj.type === "closed") bgColor = "bg-slate-100";
+      if (dayObj.type === "standard") {
+        dotColor = "bg-blue-500";
+        cellStyles = "bg-white border-slate-100 hover:border-blue-200 text-slate-700 hover:bg-blue-50/10";
+      } else if (dayObj.type === "exception") {
+        dotColor = "bg-orange-500";
+        cellStyles = "bg-orange-50 border-orange-200 hover:border-orange-350 text-orange-800 hover:bg-orange-100/50 shadow-sm";
+      } else if (dayObj.type === "closed") {
+        cellStyles = "bg-slate-100 border-slate-200 text-slate-400 hover:bg-slate-200/60";
+      }
 
       return (
-        <div key={`day-${dayNum}`} className={`h-10 flex flex-col items-center justify-center rounded-lg border border-transparent hover:border-slate-200 transition-colors ${bgColor}`}>
-          <span className="text-sm font-medium text-slate-700">{dayNum}</span>
-          {dotColor && <div className={`w-1.5 h-1.5 rounded-full mt-1 ${dotColor}`}></div>}
-        </div>
+        <button
+          key={`day-${dayNum}`}
+          type="button"
+          onClick={() => onDateClick && onDateClick(dayObj)}
+          className={`h-11 flex flex-col items-center justify-center rounded-xl border transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/45 ${cellStyles}`}
+        >
+          <span className="text-sm font-semibold">{dayNum}</span>
+          {dotColor ? (
+            <div className={`w-1.5 h-1.5 rounded-full mt-1 ${dotColor}`}></div>
+          ) : (
+            <div className="w-1.5 h-1.5 mt-1"></div>
+          )}
+        </button>
       );
     });
 
@@ -122,10 +137,10 @@ const MenuCalendarPreview = ({ refreshTrigger }) => {
           </div>
         </div>
         
-        <div className="mt-4 bg-slate-50 rounded-xl p-4 flex items-start gap-3 border border-slate-100">
-          <AlertCircle className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
-          <p className="text-xs text-slate-500 leading-relaxed">
-            Cliquez sur une date du calendrier pour créer une exception au menu standard. <br/> <span className="italic text-slate-400">(Fonctionnalité d'exception à venir)</span>
+        <div className="mt-4 bg-blue-50 rounded-xl p-4 flex items-start gap-3 border border-blue-100">
+          <AlertCircle className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+          <p className="text-xs text-blue-600 leading-relaxed">
+            Cliquez sur une date du calendrier pour configurer un menu exceptionnel ou déclarer une fermeture.
           </p>
         </div>
       </div>
