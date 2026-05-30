@@ -6,6 +6,8 @@ import AdminRouteGuard from "./AdminRouteGuard";
 
 // Student
 import StudentLogin from "../pages/auth/StudentLogin";
+import ForgotPassword from "../pages/auth/ForgotPassword";
+import ResetPassword from "../pages/auth/ResetPassword";
 import StudentLayout from "../layouts/StudentLayout";
 import StudentDashboard from "../pages/student/StudentDashboard";
 import StudentHistory from "../pages/student/StudentHistory";
@@ -41,6 +43,8 @@ const AppRoutes = () => {
         <Route path="/" element={<Navigate to="/login" replace />} />
 
         <Route path="/login" element={<StudentLogin />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/unauthorized" element={<Unauthorized />} />
 

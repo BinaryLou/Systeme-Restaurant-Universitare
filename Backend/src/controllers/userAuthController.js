@@ -41,7 +41,7 @@ const forgotPasswordController = async (req, res, next) => {
     const { email } = req.body || {};
 
     if (!email || typeof email !== "string" || !email.trim()) {
-      return next(new AppError("L'email est obligatoire", 400));
+      return next(new AppError("L'identifiant est obligatoire", 400));
     }
 
     const result = await forgotPassword(email);

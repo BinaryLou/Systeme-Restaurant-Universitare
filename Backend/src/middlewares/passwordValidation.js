@@ -28,10 +28,10 @@ const validateForgotPasswordPayload = (req, res, next) => {
   const { email } = req.body || {};
 
   if (!isNonEmptyString(email)) {
-    return next(new AppError("L'email est obligatoire", 400));
+    return next(new AppError("L'email ou le code Apogée est obligatoire", 400));
   }
 
-  if (!EMAIL_REGEX.test(email.trim().toLowerCase())) {
+  if (email.includes('@') && !EMAIL_REGEX.test(email.trim().toLowerCase())) {
     return next(new AppError("Format d'email invalide", 400));
   }
 
