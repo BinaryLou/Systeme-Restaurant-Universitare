@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom
 
 import ProtectedRoute from "./ProtectedRoute";
 import StaffRouteGuard from "./StaffRouteGuard";
+import AdminRouteGuard from "./AdminRouteGuard";
 
 // Student
 import StudentLogin from "../pages/auth/StudentLogin";
@@ -65,11 +66,7 @@ const AppRoutes = () => {
         </Route>
 
         {/* Admin routes */}
-        <Route
-          element={
-            <ProtectedRoute allowedRoles={["ADMIN"]} loginPath="/admin/login" />
-          }
-        >
+        <Route element={<AdminRouteGuard redirectPath="/admin/login" />}>
           <Route element={<AdminLayout />}>
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/services" element={<ServiceManagement />} />
