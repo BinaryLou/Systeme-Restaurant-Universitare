@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getDetailedStatistics } from "../../api/statisticsApi";
 import AnalyticsCharts from "../../components/admin/AnalyticsCharts";
+import ExportActions from "../../components/admin/ExportActions";
 
 const AdminStats = () => {
   const [period, setPeriod] = useState("week");
@@ -45,6 +46,7 @@ const AdminStats = () => {
           </h1>
           <p className="text-gray-500 mt-1">Analysez les tendances et exportez les données</p>
         </div>
+        <ExportActions period={period} />
       </div>
 
       {/* Sélecteur de période */}
