@@ -15,6 +15,7 @@ const AdminSidebar = ({ admin, onLogout }) => {
     { label: "Tableau de bord", path: "/admin/dashboard", icon: LayoutDashboard },
     { label: "Gestion Services", path: "/admin/services", icon: Utensils },
     { label: "Gestion Menus", path: "/admin/menus", icon: CalendarDays },
+    { label: "Gestion Utilisateurs", path: "/admin/users", icon: Users },
     { label: "Statistiques", path: "/admin/statistics", icon: BarChart3 },
   ];
 
@@ -65,17 +66,24 @@ const AdminSidebar = ({ admin, onLogout }) => {
 
       {/* Bottom admin */}
       <div className="p-4">
-        <div className="flex items-center gap-3 px-2 mb-6">
-          <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+        <NavLink 
+          to="/admin/profile"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-2 mb-6 rounded-xl transition-all duration-200 p-2 ${
+              isActive ? "bg-blue-50 ring-1 ring-blue-100" : "hover:bg-slate-50"
+            }`
+          }
+        >
+          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
             <User size={20} />
           </div>
-          <div className="overflow-hidden">
+          <div className="overflow-hidden flex-1">
             <h3 className="text-sm font-semibold text-slate-900 truncate">
               {admin?.prenom || "Admin"} {admin?.nom || "Principal"}
             </h3>
-            <p className="text-xs text-slate-500">Administrateur</p>
+            <p className="text-xs text-slate-500">Administrateur (Profil)</p>
           </div>
-        </div>
+        </NavLink>
 
         <button
           onClick={onLogout}
