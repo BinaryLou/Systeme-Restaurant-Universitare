@@ -56,16 +56,18 @@ const ResetPassword = () => {
 
     try {
       setLoading(true);
-      await resetPassword({
+      const response = await resetPassword({
         token,
         new_password: formData.new_password,
         confirm_password: formData.confirm_password,
       });
       setSuccess(true);
       
+      const isAdmin = response?.data?.user && !response.data.user.apogee;
+      
       // Optionnel : rediriger automatiquement après quelques secondes
       setTimeout(() => {
-        navigate("/login");
+        navigate(isAdmin ? "/admin/login" : "/login");
       }, 3000);
       
     } catch (err) {
@@ -158,10 +160,10 @@ const ResetPassword = () => {
                 Votre mot de passe a été réinitialisé avec succès. Vous allez être redirigé vers la page de connexion.
               </p>
               <Link
-                to="/login"
+                to="/"
                 className="inline-flex w-full h-14 items-center justify-center bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-lg shadow-lg shadow-blue-600/25 transition active:scale-[0.98]"
               >
-                Se connecter
+                Retour à l'accueil
               </Link>
             </div>
           ) : (

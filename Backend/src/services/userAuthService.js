@@ -89,15 +89,22 @@ const forgotPassword = async (identifier) => {
   await deleteExpiredRefreshTokens();
   await passwordResetTokenModel.deleteExpiredTokens();
 
+  const adminModel = require("../models/adminModel");
+  const adminResetModel = require("../models/adminPasswordResetTokenModel");
+
   let user = null;
+  let admin = null;
   if (normalizedIdentifier.includes('@')) {
     user = await findUserByEmail(normalizedIdentifier.toLowerCase());
+    if (!user) {
+      admin = await adminModel.findAdminByEmail(normalizedIdentifier.toLowerCase());
+    }
   } else {
     user = await findUserByApogee(normalizedIdentifier);
   }
 
   // Toujours retourner un message générique
-  if (!user) {
+  if (!user && !admin) {
     return {
       dev_reset_token: null,
       expires_at: null,
@@ -114,22 +121,37 @@ const forgotPassword = async (identifier) => {
   try {
     await connection.beginTransaction();
 
-    await passwordResetTokenModel.deleteTokensForUser(
-      connection,
-      user.id_utilisateur
-    );
+    if (user) {
+      await passwordResetTokenModel.deleteTokensForUser(
+        connection,
+        user.id_utilisateur
+      );
 
-    await passwordResetTokenModel.createResetToken(
-      connection,
-      user.id_utilisateur,
-      tokenHash,
-      expiresAt
-    );
+      await passwordResetTokenModel.createResetToken(
+        connection,
+        user.id_utilisateur,
+        tokenHash,
+        expiresAt
+      );
+    } else if (admin) {
+      await adminResetModel.deleteTokensForAdmin(
+        connection,
+        admin.id_admin
+      );
+
+      await adminResetModel.createResetToken(
+        connection,
+        admin.id_admin,
+        tokenHash,
+        expiresAt
+      );
+    }
 
     await connection.commit();
 
     // Envoi de l'email avec le rawToken (qui servira pour construire le lien)
-    await sendResetPasswordEmail(user.email, rawToken);
+    const emailToSend = user ? user.email : admin.email;
+    await sendResetPasswordEmail(emailToSend, rawToken);
 
     return {
       dev_reset_token:
@@ -178,18 +200,32 @@ const resetPassword = async ({ token, newPassword, confirmPassword }) => {
     .update(cleanedToken)
     .digest("hex");
 
-  const resetTokenRecord = await passwordResetTokenModel.findValidTokenByHash(
-    tokenHash
-  );
+  const adminResetModel = require("../models/adminPasswordResetTokenModel");
+  
+  let resetTokenRecord = await passwordResetTokenModel.findValidTokenByHash(tokenHash);
+  let isAdmin = false;
+  
+  if (!resetTokenRecord) {
+    resetTokenRecord = await adminResetModel.findValidTokenByHash(tokenHash);
+    if (resetTokenRecord) {
+      isAdmin = true;
+    }
+  }
 
   if (!resetTokenRecord) {
     throw new AppError("Le token est invalide, expiré ou déjà utilisé", 400);
   }
 
-  const user = await findUserById(resetTokenRecord.id_utilisateur);
-
-  if (!user) {
-    throw new AppError("Utilisateur introuvable", 404);
+  let user = null;
+  let admin = null;
+  
+  if (isAdmin) {
+    const adminModel = require("../models/adminModel");
+    admin = await adminModel.findAdminByEmail((await db.query("SELECT email FROM administrateur WHERE id_admin = ?", [resetTokenRecord.id_admin]))[0][0].email);
+    if (!admin) throw new AppError("Administrateur introuvable", 404);
+  } else {
+    user = await findUserById(resetTokenRecord.id_utilisateur);
+    if (!user) throw new AppError("Utilisateur introuvable", 404);
   }
 
   const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS || 10);
@@ -200,25 +236,40 @@ const resetPassword = async ({ token, newPassword, confirmPassword }) => {
   try {
     await connection.beginTransaction();
 
-    await updateUserPasswordById(
-      connection,
-      user.id_utilisateur,
-      newPasswordHash
-    );
-
-    await passwordResetTokenModel.markTokenAsUsed(
-      connection,
-      resetTokenRecord.id_reset_token
-    );
-
-    await passwordResetTokenModel.revokeOtherActiveTokensForUser(
-      connection,
-      user.id_utilisateur
-    );
-
-    await revokeAllUserRefreshTokens(connection, user.id_utilisateur);
+    if (isAdmin) {
+      await connection.execute("UPDATE administrateur SET mot_de_passe_hash = ? WHERE id_admin = ?", [newPasswordHash, admin.id_admin]);
+      await adminResetModel.markTokenAsUsed(connection, resetTokenRecord.id_reset_token);
+      await adminResetModel.revokeOtherActiveTokensForAdmin(connection, admin.id_admin);
+      await connection.execute("DELETE FROM refresh_tokens WHERE account_type = 'ADMIN' AND admin_id = ?", [admin.id_admin]);
+    } else {
+      await updateUserPasswordById(
+        connection,
+        user.id_utilisateur,
+        newPasswordHash
+      );
+      await passwordResetTokenModel.markTokenAsUsed(
+        connection,
+        resetTokenRecord.id_reset_token
+      );
+      await passwordResetTokenModel.revokeOtherActiveTokensForUser(
+        connection,
+        user.id_utilisateur
+      );
+      await revokeAllUserRefreshTokens(connection, user.id_utilisateur);
+    }
 
     await connection.commit();
+
+    if (isAdmin) {
+      return {
+        user: {
+          id: admin.id_admin,
+          email: admin.email,
+          nom: admin.nom,
+          prenom: admin.prenom,
+        },
+      };
+    }
 
     return {
       user: {
