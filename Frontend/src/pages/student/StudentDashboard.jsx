@@ -51,7 +51,7 @@ const StudentDashboard = () => {
   const todayStr = new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] px-4 py-6 lg:px-8 lg:py-8">
+    <div className="min-h-screen bg-[#f8fafc] px-3 py-5 sm:px-6 lg:px-8 lg:py-8 animate-page-fade">
       {/* HERO */}
       <section className="rounded-[18px] bg-[#1d4fed] px-6 py-8 lg:px-12 lg:py-10 text-white shadow-xl shadow-blue-900/20">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 lg:gap-6">

@@ -47,7 +47,7 @@ const ServiceManagement = () => {
   });
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 animate-page-fade">
       {/* Header Panel */}
       <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-start gap-4">
         <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
@@ -61,26 +61,30 @@ const ServiceManagement = () => {
 
       {/* Services Table Panel */}
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="grid grid-cols-4 items-center p-4 bg-slate-50 border-b border-slate-100">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Type de Service</div>
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Heure de Début</div>
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Heure de Fin</div>
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</div>
-        </div>
-
-        <div className="divide-y divide-slate-100">
-          {sortedServices.map(service => (
-            <ServiceRow 
-              key={service.id_service} 
-              service={service} 
-              onSave={handleSaveService} 
-            />
-          ))}
-          {sortedServices.length === 0 && !loading && (
-            <div className="p-8 text-center text-slate-500">
-              Aucun service configuré.
+        <div className="overflow-x-auto">
+          <div className="min-w-[600px]">
+            <div className="grid grid-cols-4 items-center p-4 bg-slate-50 border-b border-slate-100">
+              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Type de Service</div>
+              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Heure de Début</div>
+              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Heure de Fin</div>
+              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</div>
             </div>
-          )}
+
+            <div className="divide-y divide-slate-100">
+              {sortedServices.map(service => (
+                <ServiceRow 
+                  key={service.id_service} 
+                  service={service} 
+                  onSave={handleSaveService} 
+                />
+              ))}
+              {sortedServices.length === 0 && !loading && (
+                <div className="p-8 text-center text-slate-500">
+                  Aucun service configuré.
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 

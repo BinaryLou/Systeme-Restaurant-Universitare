@@ -88,7 +88,7 @@ const MenuManagement = () => {
   const selectedDayName = DAYS.find(d => d.id === selectedDay)?.name || "Lundi";
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6 animate-page-fade">
       {/* Header */}
       <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-start gap-4">
         <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">

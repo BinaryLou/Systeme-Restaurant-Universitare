@@ -44,8 +44,6 @@ const AdminLogin = () => {
 
       navigate("/admin/dashboard");
     } catch (err) {
-      console.log("ADMIN LOGIN ERROR:", err);
-
       setError(
         err.response?.data?.message ||
           err.message ||

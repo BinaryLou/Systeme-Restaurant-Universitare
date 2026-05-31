@@ -53,8 +53,8 @@ const MenuCalendarPreview = ({ refreshTrigger, onDateClick }) => {
         dotColor = "bg-blue-500";
         cellStyles = "bg-white border-slate-100 hover:border-blue-200 text-slate-700 hover:bg-blue-50/10";
       } else if (dayObj.type === "exception") {
-        dotColor = "bg-orange-500";
-        cellStyles = "bg-orange-50 border-orange-200 hover:border-orange-350 text-orange-800 hover:bg-orange-100/50 shadow-sm";
+        dotColor = "bg-red-500";
+        cellStyles = "bg-red-50 border-red-200 hover:border-red-350 text-red-800 hover:bg-red-100/50 shadow-sm";
       } else if (dayObj.type === "closed") {
         cellStyles = "bg-slate-100 border-slate-200 text-slate-400 hover:bg-slate-200/60";
       }
@@ -128,7 +128,7 @@ const MenuCalendarPreview = ({ refreshTrigger, onDateClick }) => {
             <span className="text-xs text-slate-600">Menu standard du jour appliqué</span>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+            <div className="w-2 h-2 rounded-full bg-red-500"></div>
             <span className="text-xs text-slate-600">Menu exceptionnel (date spécifique)</span>
           </div>
           <div className="flex items-center gap-3">
