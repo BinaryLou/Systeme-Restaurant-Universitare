@@ -13,7 +13,7 @@ const StudentReservation = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] px-8 py-8">
+    <div className="min-h-screen bg-[#f8fafc] px-3 py-5 sm:px-6 lg:px-8 lg:py-8 animate-page-fade">
       <ReservationHeader />
 
       <div className="mt-8 grid grid-cols-1 gap-8 xl:grid-cols-[1fr_390px]">

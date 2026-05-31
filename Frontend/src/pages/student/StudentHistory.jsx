@@ -141,24 +141,24 @@ const StudentHistory = () => {
   };
 
   return (
-    <section className="mx-auto max-w-4xl space-y-6 pb-12">
+    <section className="mx-auto max-w-4xl space-y-6 pb-12 px-3 sm:px-4 animate-page-fade">
       {/* HEADER HERO */}
-      <div className="rounded-[18px] bg-[#1d4fed] px-8 py-8 text-white shadow-xl shadow-blue-900/20 flex items-center gap-5">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm shrink-0">
-          <HistoryIcon size={32} />
+      <div className="rounded-[18px] bg-[#1d4fed] px-5 py-6 sm:px-8 sm:py-8 text-white shadow-xl shadow-blue-900/20 flex items-center gap-4 sm:gap-5">
+        <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm shrink-0">
+          <HistoryIcon className="w-6 h-6 sm:w-8 sm:h-8" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
             Historique des réservations
           </h1>
-          <p className="mt-2 text-blue-100">
+          <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-blue-100">
             Consultez et gérez vos réservations
           </p>
         </div>
       </div>
 
       {/* TABS */}
-      <div className="flex w-fit rounded-xl bg-white p-1.5 shadow-sm border border-slate-200">
+      <div className="flex w-fit rounded-xl bg-white p-1 border border-slate-200">
         {["Toutes", "À venir", "Passées"].map((tab) => (
           <button
             key={tab}
@@ -166,7 +166,7 @@ const StudentHistory = () => {
               setActiveTab(tab);
               setVisibleCount(2);
             }}
-            className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
+            className={`px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer ${
               activeTab === tab
                 ? "bg-[#1d4fed] text-white shadow-md shadow-blue-600/20"
                 : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
@@ -214,7 +214,7 @@ const StudentHistory = () => {
             const menuItems = reservation.menu || getMenuForMeal(reservation.type_repas);
             
             return (
-              <div key={reservation.id_reservation} className="flex gap-4 sm:gap-8 relative min-h-[140px]">
+              <div key={reservation.id_reservation} className="flex gap-2 sm:gap-6 md:gap-8 relative min-h-[140px]">
                 {/* Timeline gauche */}
                 <div className="w-14 sm:w-16 flex flex-col items-center shrink-0 z-10 pt-2">
                   <span className="text-xs font-semibold text-slate-500 capitalize">
@@ -246,7 +246,7 @@ const StudentHistory = () => {
                 {/* Carte Réservation */}
                 <div className="flex-1 pb-8">
                   <div 
-                    className={`rounded-2xl border bg-white p-5 sm:p-6 shadow-sm transition-shadow hover:shadow-md
+                    className={`rounded-2xl border bg-white p-4 sm:p-6 shadow-sm transition-shadow hover:shadow-md
                       ${isUpcoming ? 'border-blue-200' : isCanceled ? 'border-red-200' : isExpired ? 'border-amber-200' : 'border-green-200'}
                     `}
                   >
@@ -334,7 +334,7 @@ const StudentHistory = () => {
 
       {/* STATISTIQUES SECTION */}
       {!loading && (
-        <div className="mt-8 rounded-[20px] bg-white border border-slate-200 p-8 shadow-sm">
+        <div className="mt-8 rounded-[20px] bg-white border border-slate-200 p-4 sm:p-8 shadow-sm">
           <p className="text-center text-xs font-bold uppercase tracking-widest text-slate-400 mb-8">
             Statistiques
           </p>

@@ -187,17 +187,17 @@ const StudentQrCode = () => {
   const user = qrData?.user;
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-8 md:px-8">
+    <div className="min-h-screen bg-slate-50 px-3 py-6 sm:px-6 md:px-8 animate-page-fade">
       <div className="mx-auto max-w-3xl">
-        <div className="rounded-2xl bg-gradient-to-r from-blue-600 to-blue-800 p-8 text-white shadow-lg">
+        <div className="rounded-2xl bg-gradient-to-r from-blue-600 to-blue-800 p-5 sm:p-8 text-white shadow-lg">
           <div className="flex items-center gap-5">
             <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/15">
               <QrCode className="h-7 w-7" />
             </div>
 
             <div>
-              <h1 className="text-3xl font-bold tracking-wide">Mon QR Code</h1>
-              <p className="mt-1 text-sm text-blue-100">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-wide">Mon QR Code</h1>
+              <p className="mt-1 text-xs sm:text-sm text-blue-100">
                 Code personnel pour accéder au restaurant
               </p>
             </div>
@@ -205,30 +205,30 @@ const StudentQrCode = () => {
         </div>
 
         <div className="mt-8 overflow-hidden rounded-2xl bg-white shadow-md">
-          <div className="flex items-center justify-center gap-3 border-b border-green-100 bg-green-50 px-6 py-4">
+          <div className="flex items-center justify-center gap-3 border-b border-green-100 bg-green-50 px-4 sm:px-6 py-4">
             <CheckCircle className="h-6 w-6 text-green-600" />
-            <span className="font-semibold text-green-700">
+            <span className="font-semibold text-green-700 text-sm sm:text-base">
               Code actif et valide
             </span>
           </div>
 
-          <div className="p-8">
+          <div className="p-4 sm:p-8">
             <div className="flex justify-center">
-              <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-lg">
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-8 shadow-lg">
                 <img
                   src={qrData?.qr_code_image}
                   alt="QR Code étudiant"
-                  className="h-64 w-64 object-contain"
+                  className="h-48 w-48 sm:h-64 sm:w-64 object-contain max-w-full"
                 />
               </div>
             </div>
 
-            <div className="mt-8 grid grid-cols-1 gap-4 rounded-xl border border-slate-200 bg-slate-50 p-5 md:grid-cols-2">
+            <div className="mt-8 grid grid-cols-1 gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:p-5 md:grid-cols-2">
               <div className="text-center">
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-500">
                   Code Apogée
                 </p>
-                <p className="mt-2 font-bold text-slate-900">
+                <p className="mt-2 font-bold text-slate-900 text-sm sm:text-base">
                   {user?.apogee || "-"}
                 </p>
               </div>
@@ -237,7 +237,7 @@ const StudentQrCode = () => {
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-500">
                   Étudiant
                 </p>
-                <p className="mt-2 font-bold text-slate-900">
+                <p className="mt-2 font-bold text-slate-900 text-sm sm:text-base">
                   {user?.prenom} {user?.nom}
                 </p>
               </div>
@@ -246,7 +246,7 @@ const StudentQrCode = () => {
             <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
               <button
                 onClick={downloadPng}
-                className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-4 font-semibold text-white shadow-md hover:bg-blue-700"
+                className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-4 font-semibold text-white shadow-md hover:bg-blue-700 transition cursor-pointer"
               >
                 <Download className="h-5 w-5" />
                 Télécharger en PNG
@@ -254,7 +254,7 @@ const StudentQrCode = () => {
 
               <button
                 onClick={downloadPdf}
-                className="flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-4 font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
+                className="flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-4 font-semibold text-slate-800 shadow-sm hover:bg-slate-50 transition cursor-pointer"
               >
                 <Download className="h-5 w-5" />
                 Télécharger en PDF
@@ -263,7 +263,7 @@ const StudentQrCode = () => {
           </div>
         </div>
 
-        <div className="mt-8 rounded-2xl border border-blue-100 bg-blue-50 p-7">
+        <div className="mt-8 rounded-2xl border border-blue-100 bg-blue-50 p-5 sm:p-7">
           <h2 className="text-xl font-bold text-blue-900">
             Comment utiliser votre QR Code ?
           </h2>

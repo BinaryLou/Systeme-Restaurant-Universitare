@@ -7,10 +7,11 @@ import {
   Users,
   LogOut,
   User,
+  X,
 } from "lucide-react";
 import logoRU from "../../assets/logo-ru.png";
 
-const AdminSidebar = ({ admin, onLogout }) => {
+const AdminSidebar = ({ admin, onLogout, isOpen, onClose }) => {
   const menuItems = [
     { label: "Tableau de bord", path: "/admin/dashboard", icon: LayoutDashboard },
     { label: "Gestion Services", path: "/admin/services", icon: Utensils },
@@ -20,24 +21,47 @@ const AdminSidebar = ({ admin, onLogout }) => {
   ];
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-72 bg-white border-r border-slate-200 flex flex-col justify-between z-50">
-      <div>
-        {/* Header / Logo */}
-        <div className="h-24 px-6 border-b border-slate-100 flex items-center gap-3">
-          <img
-            src={logoRU}
-            alt="RU Ticket"
-            className="w-10 h-10 object-contain"
-          />
-          <div className="leading-tight flex flex-col">
-            <h1 className="text-slate-900 font-bold text-lg leading-snug">
-              Restaurant
-            </h1>
-            <h1 className="text-slate-900 font-bold text-lg leading-snug">
-              Universitaire
-            </h1>
+    <>
+      {/* Backdrop overlay for mobile */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden"
+          onClick={onClose}
+        />
+      )}
+
+      <aside
+        className={`fixed left-0 top-0 h-screen w-72 bg-white border-r border-slate-200 flex flex-col justify-between z-50 transition-transform duration-300 lg:translate-x-0 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div>
+          {/* Header / Logo */}
+          <div className="h-24 px-6 border-b border-slate-100 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <img
+                src={logoRU}
+                alt="RU Ticket"
+                className="w-10 h-10 object-contain"
+              />
+              <div className="leading-tight flex flex-col">
+                <h1 className="text-slate-900 font-bold text-lg leading-snug">
+                  Restaurant
+                </h1>
+                <h1 className="text-slate-900 font-bold text-lg leading-snug">
+                  Universitaire
+                </h1>
+              </div>
+            </div>
+
+            <button
+              onClick={onClose}
+              className="lg:hidden p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"
+              aria-label="Fermer le menu"
+            >
+              <X size={20} />
+            </button>
           </div>
-        </div>
 
         {/* Navigation */}
         <nav className="px-4 pt-6 space-y-2">
@@ -90,10 +114,10 @@ const AdminSidebar = ({ admin, onLogout }) => {
           className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-red-100 text-red-500 hover:bg-red-50 font-medium transition-colors"
         >
           <LogOut size={18} />
-          Se déconnecter
         </button>
       </div>
     </aside>
+  </>
   );
 };
 

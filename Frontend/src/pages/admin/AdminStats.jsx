@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { getDetailedStatistics } from "../../api/statisticsApi";
 import AnalyticsCharts from "../../components/admin/AnalyticsCharts";
 import ExportActions from "../../components/admin/ExportActions";
+import { Loader2 } from "lucide-react";
 
 const AdminStats = () => {
   const [period, setPeriod] = useState("week");
@@ -34,7 +35,7 @@ const AdminStats = () => {
   ];
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto space-y-6 animate-page-fade">
       {/* En-tête */}
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -77,7 +78,7 @@ const AdminStats = () => {
       {/* Chargement ou Erreur */}
       {isLoading ? (
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
         </div>
       ) : error ? (
         <div className="bg-red-50 text-red-600 p-4 rounded-lg">
