@@ -119,6 +119,79 @@ const updateUserPasswordById = async (
   return result;
 };
 
+const updateUserPassword = async (idUtilisateur, passwordHash) => {
+  const sql = `
+    UPDATE utilisateur
+    SET mot_de_passe_hash = ?,
+        updated_at = NOW()
+    WHERE id_utilisateur = ?
+  `;
+
+  const [result] = await pool.execute(sql, [passwordHash, idUtilisateur]);
+  return result.affectedRows > 0;
+};
+
+const getAllUsers = async (searchTerm = "") => {
+  let sql = `
+    SELECT 
+      id_utilisateur,
+      apogee,
+      nom,
+      prenom,
+      email,
+      solde,
+      created_at
+    FROM utilisateur
+  `;
+  const params = [];
+
+  if (searchTerm) {
+    sql += ` WHERE nom LIKE ? OR prenom LIKE ? OR apogee LIKE ? OR email LIKE ?`;
+    const term = `%${searchTerm}%`;
+    params.push(term, term, term, term);
+  }
+
+  sql += ` ORDER BY created_at DESC`;
+
+  const [rows] = await pool.execute(sql, params);
+  return rows;
+};
+
+const createUser = async ({ apogee, nom, prenom, email, mot_de_passe_hash, code_qr, solde = 0 }) => {
+  const sql = `
+    INSERT INTO utilisateur (apogee, nom, prenom, email, mot_de_passe_hash, code_qr, solde)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `;
+  const [result] = await pool.execute(sql, [apogee, nom, prenom, email, mot_de_passe_hash, code_qr, solde]);
+  return result.insertId;
+};
+
+const updateUser = async (id, { apogee, nom, prenom, email }) => {
+  const sql = `
+    UPDATE utilisateur
+    SET apogee = ?, nom = ?, prenom = ?, email = ?, updated_at = NOW()
+    WHERE id_utilisateur = ?
+  `;
+  const [result] = await pool.execute(sql, [apogee, nom, prenom, email, id]);
+  return result.affectedRows > 0;
+};
+
+const deleteUser = async (id) => {
+  const sql = `DELETE FROM utilisateur WHERE id_utilisateur = ?`;
+  const [result] = await pool.execute(sql, [id]);
+  return result.affectedRows > 0;
+};
+
+const updateUserBalance = async (id, newBalance) => {
+  const sql = `
+    UPDATE utilisateur
+    SET solde = ?, updated_at = NOW()
+    WHERE id_utilisateur = ?
+  `;
+  const [result] = await pool.execute(sql, [newBalance, id]);
+  return result.affectedRows > 0;
+};
+
 module.exports = {
   findUserByApogee,
   findUserById,
@@ -126,4 +199,10 @@ module.exports = {
   findUserQrById,
   findUserByEmail,
   updateUserPasswordById,
+  updateUserPassword,
+  getAllUsers,
+  createUser,
+  updateUser,
+  deleteUser,
+  updateUserBalance,
 };

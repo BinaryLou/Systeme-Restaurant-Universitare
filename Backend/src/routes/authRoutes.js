@@ -13,7 +13,8 @@ const {
   resetPasswordController,
   changePasswordController,
 } = require("../controllers/userAuthController");
-const { adminLogin } = require("../controllers/adminAuthController");
+const { adminLogin, getAdminProfileController, changeAdminPasswordController } = require("../controllers/adminAuthController");
+const requireRole = require("../middlewares/requireRole");
 const {
   handleRefreshToken,
   handleLogout,
@@ -43,6 +44,21 @@ router.patch(
   verifyJwt,
   validateChangePasswordPayload,
   changePasswordController
+);
+
+router.get(
+  "/admin/profile",
+  verifyJwt,
+  requireRole("ADMIN"),
+  getAdminProfileController
+);
+
+router.patch(
+  "/admin/change-password",
+  verifyJwt,
+  requireRole("ADMIN"),
+  validateChangePasswordPayload,
+  changeAdminPasswordController
 );
 
 module.exports = router;

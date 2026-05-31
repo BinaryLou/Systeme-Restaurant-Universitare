@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 
-const { findAdminByEmail } = require("../models/adminModel");
+const { findAdminByEmail, findAdminById, updateAdminPasswordById } = require("../models/adminModel");
 const { createRefreshToken } = require("../models/refreshTokenModel");
 const { signAccessToken, signRefreshToken } = require("../utils/jwt");
 const AppError = require("../utils/AppError");
@@ -51,7 +51,7 @@ const loginAdmin = async (email, password) => {
       id: admin.id_admin,
       email: admin.email,
       nom: admin.nom,
-      prenomnom: admin.prenom,
+      prenom: admin.prenom,
       role: "ADMIN"
     },
     tokens: {
@@ -61,6 +61,49 @@ const loginAdmin = async (email, password) => {
   };
 };
 
+const getAdminProfile = async (idAdmin) => {
+  const admin = await findAdminById(idAdmin);
+  if (!admin) {
+    throw new AppError("Administrateur introuvable", 404);
+  }
+  return {
+    id: admin.id_admin,
+    email: admin.email,
+    nom: admin.nom,
+    prenom: admin.prenom,
+    role: "ADMIN"
+  };
+};
+
+const changeAdminPassword = async ({ adminId, oldPassword, newPassword, confirmPassword }) => {
+  if (!oldPassword || !newPassword || !confirmPassword) {
+    throw new AppError("Tous les champs sont obligatoires", 400);
+  }
+
+  if (newPassword !== confirmPassword) {
+    throw new AppError("Les nouveaux mots de passe ne correspondent pas", 400);
+  }
+
+  const admin = await findAdminById(adminId);
+  if (!admin) {
+    throw new AppError("Administrateur introuvable", 404);
+  }
+
+  const isMatch = await bcrypt.compare(oldPassword, admin.mot_de_passe_hash);
+  if (!isMatch) {
+    throw new AppError("L'ancien mot de passe est incorrect", 400);
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  const newPasswordHash = await bcrypt.hash(newPassword, salt);
+
+  await updateAdminPasswordById(adminId, newPasswordHash);
+
+  return true;
+};
+
 module.exports = {
-  loginAdmin
+  loginAdmin,
+  getAdminProfile,
+  changeAdminPassword
 };
