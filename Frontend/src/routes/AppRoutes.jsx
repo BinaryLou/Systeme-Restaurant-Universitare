@@ -21,6 +21,7 @@ import AdminLayout from "../layouts/AdminLayout";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import ServiceManagement from "../pages/admin/ServiceManagement";
 import MenuManagement from "../pages/admin/MenuManagement";
+import AdminStats from "../pages/admin/AdminStats";
 
 // Staff
 import StaffLayout from "../layouts/StaffLayout";
@@ -75,6 +76,7 @@ const AppRoutes = () => {
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/services" element={<ServiceManagement />} />
             <Route path="/admin/menus" element={<MenuManagement />} />
+            <Route path="/admin/statistics" element={<AdminStats />} />
           </Route>
         </Route>
 
