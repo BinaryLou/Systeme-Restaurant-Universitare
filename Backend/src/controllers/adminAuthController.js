@@ -9,7 +9,7 @@ const adminLogin = async (req, res, next) => {
 
     res.cookie("refreshToken", result.tokens.refreshToken, {
       httpOnly: true,
-      secure: false, // mettre true en production avec HTTPS
+      secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });

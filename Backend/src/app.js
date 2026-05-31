@@ -3,6 +3,7 @@ const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
+const customSecurity = require("./middlewares/customSecurity");
 
 
 const authRoutes = require("./routes/authRoutes");
@@ -27,6 +28,7 @@ app.set("trust proxy", 1);
 app.use(
   helmet({
     crossOriginResourcePolicy: false,
+    contentSecurityPolicy: process.env.NODE_ENV === "production" ? undefined : false,
   })
 );
 
@@ -42,6 +44,9 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Custom Security (XSS & HPP)
+app.use(customSecurity);
 
 // Logger
 app.use(logger);

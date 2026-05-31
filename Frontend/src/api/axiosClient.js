@@ -107,7 +107,7 @@ axiosClient.interceptors.response.use(
         processQueue(refreshError, null);
         clearAccessToken();
 
-        window.location.href = "/";
+        window.location.href = "/login";
 
         return Promise.reject(refreshError);
       } finally {
