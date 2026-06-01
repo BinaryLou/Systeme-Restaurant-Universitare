@@ -1,6 +1,8 @@
 const ExcelJS = require("exceljs");
 const statisticsModel = require("../models/statisticsModel");
 
+const DEFAULT_MEAL_PRICE = Number(process.env.DEFAULT_MEAL_PRICE || 2);
+
 const safeNumber = (value) => {
   const num = Number(value);
   return Number.isNaN(num) ? 0 : num;
@@ -133,121 +135,246 @@ const buildStatisticsExcelWorkbook = async (filters) => {
   workbook.created = new Date();
   workbook.modified = new Date();
 
+  const thinBorder = {
+    top: { style: 'thin', color: { argb: 'D3D3D3' } },
+    left: { style: 'thin', color: { argb: 'D3D3D3' } },
+    bottom: { style: 'thin', color: { argb: 'D3D3D3' } },
+    right: { style: 'thin', color: { argb: 'D3D3D3' } }
+  };
+
   // Feuille 1 : Résumé
   const summarySheet = workbook.addWorksheet("Résumé");
+  summarySheet.showGridLines = true;
 
-  summarySheet.columns = [
-    { header: "Champ", key: "field", width: 30 },
-    { header: "Valeur", key: "value", width: 20 },
+  // Banner row
+  summarySheet.mergeCells("A1:B2");
+  const titleCell = summarySheet.getCell("A1");
+  titleCell.value = "RAPPORT STATISTIQUE - RESTAURANT UNIVERSITAIRE";
+  titleCell.font = { name: "Calibri", size: 12, bold: true, color: { argb: "FFFFFF" } };
+  titleCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "1F4E79" } };
+  titleCell.alignment = { horizontal: "center", vertical: "middle" };
+
+  summarySheet.getRow(1).height = 20;
+  summarySheet.getRow(2).height = 20;
+
+  // Row 4: Section title
+  summarySheet.getCell("A4").value = "Filtres Appliqués";
+  summarySheet.getCell("A4").font = { name: "Calibri", size: 11, bold: true, color: { argb: "1F4E79" } };
+
+  // Row 5: Column Headers
+  const headerRow5 = summarySheet.getRow(5);
+  headerRow5.values = ["Paramètre", "Valeur"];
+  headerRow5.eachCell((cell) => {
+    cell.font = { name: "Calibri", size: 11, bold: true, color: { argb: "FFFFFF" } };
+    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "2E75B6" } };
+    cell.border = thinBorder;
+  });
+
+  const filtersData = [
+    { param: "Période", val: stats.period || "-" },
+    { param: "Date", val: stats.filters?.date || "-" },
+    { param: "Date début", val: stats.filters?.startDate || "-" },
+    { param: "Date fin", val: stats.filters?.endDate || "-" },
+    { param: "Année", val: stats.filters?.year || "-" },
+    { param: "Mois", val: stats.filters?.month || "-" },
   ];
 
-  summarySheet.addRow({ field: "Période", value: stats.period || "-" });
-  summarySheet.addRow({ field: "Date", value: stats.filters?.date || "-" });
-  summarySheet.addRow({
-    field: "Date début",
-    value: stats.filters?.startDate || "-",
-  });
-  summarySheet.addRow({
-    field: "Date fin",
-    value: stats.filters?.endDate || "-",
-  });
-  summarySheet.addRow({ field: "Année", value: stats.filters?.year || "-" });
-  summarySheet.addRow({ field: "Mois", value: stats.filters?.month || "-" });
-
-  summarySheet.addRow({});
-
-  summarySheet.addRow({
-    field: "Total réservations",
-    value: stats.summary?.totalReservations || 0,
-  });
-  summarySheet.addRow({
-    field: "Tickets utilisés",
-    value: stats.summary?.usedTickets || 0,
-  });
-  summarySheet.addRow({
-    field: "Tickets annulés",
-    value: stats.summary?.cancelledTickets || 0,
-  });
-  summarySheet.addRow({
-    field: "Tickets réservés",
-    value: stats.summary?.reservedTickets || 0,
-  });
-  summarySheet.addRow({
-    field: "No-show",
-    value: stats.summary?.noShowCount || 0,
-  });
-  summarySheet.addRow({
-    field: "Taux d'utilisation (%)",
-    value: stats.summary?.usageRate || 0,
-  });
-  summarySheet.addRow({
-    field: "Taux d'annulation (%)",
-    value: stats.summary?.cancellationRate || 0,
-  });
-  summarySheet.addRow({
-    field: "Taux de no-show (%)",
-    value: stats.summary?.noShowRate || 0,
+  filtersData.forEach((item, i) => {
+    const row = summarySheet.getRow(6 + i);
+    row.values = [item.param, item.val];
+    row.getCell(1).border = thinBorder;
+    row.getCell(1).font = { name: "Calibri", size: 10, bold: true };
+    row.getCell(2).border = thinBorder;
+    row.getCell(2).font = { name: "Calibri", size: 10 };
+    row.getCell(2).alignment = { horizontal: "center" };
   });
 
-  summarySheet.getRow(1).font = { bold: true };
+  // Row 13: Section Title
+  summarySheet.getCell("A13").value = "Indicateurs de Performance (KPI) & Revenus";
+  summarySheet.getCell("A13").font = { name: "Calibri", size: 11, bold: true, color: { argb: "1F4E79" } };
+
+  // Row 14: Column Headers
+  const headerRow14 = summarySheet.getRow(14);
+  headerRow14.values = ["Indicateur", "Valeur"];
+  headerRow14.eachCell((cell) => {
+    cell.font = { name: "Calibri", size: 11, bold: true, color: { argb: "FFFFFF" } };
+    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "1F4E79" } };
+    cell.border = thinBorder;
+  });
+
+  const kpisData = [
+    { name: "Total réservations", val: stats.summary?.totalReservations || 0, isNum: true },
+    { name: "Tickets utilisés", val: stats.summary?.usedTickets || 0, isNum: true },
+    { name: "Tickets annulés", val: stats.summary?.cancelledTickets || 0, isNum: true },
+    { name: "Tickets réservés", val: stats.summary?.reservedTickets || 0, isNum: true },
+    { name: "No-show", val: stats.summary?.noShowCount || 0, isNum: true },
+    { name: "Taux d'utilisation (%)", val: (stats.summary?.usageRate || 0) / 100, isPercent: true },
+    { name: "Taux d'annulation (%)", val: (stats.summary?.cancellationRate || 0) / 100, isPercent: true },
+    { name: "Taux de no-show (%)", val: (stats.summary?.noShowRate || 0) / 100, isPercent: true },
+    { name: "Chiffre d'affaires estimé", val: (stats.summary?.usedTickets || 0) * DEFAULT_MEAL_PRICE, isCurrency: true },
+    { name: "Valeur totale des réservations", val: (stats.summary?.totalReservations || 0) * DEFAULT_MEAL_PRICE, isCurrency: true },
+  ];
+
+  kpisData.forEach((item, i) => {
+    const rowNum = 15 + i;
+    const row = summarySheet.getRow(rowNum);
+    row.values = [item.name, item.val];
+    
+    const cellName = row.getCell(1);
+    const cellVal = row.getCell(2);
+    
+    cellName.border = thinBorder;
+    cellName.font = { name: "Calibri", size: 10, bold: true };
+    
+    cellVal.border = thinBorder;
+    cellVal.font = { name: "Calibri", size: 10 };
+    cellVal.alignment = { horizontal: "right" };
+    
+    if (i % 2 === 1) {
+      cellName.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "F8FAFC" } };
+      cellVal.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "F8FAFC" } };
+    }
+
+    if (item.isPercent) {
+      cellVal.numFormat = "0.0%";
+    } else if (item.isCurrency) {
+      cellVal.numFormat = '#,##0.00" DH"';
+      cellVal.font = { name: "Calibri", size: 10, bold: true, color: { argb: "15803D" } };
+    } else if (item.isNum) {
+      cellVal.numFormat = "#,##0";
+    }
+  });
 
   // Feuille 2 : Tendance des réservations
-  const reservationTrendSheet = workbook.addWorksheet("Reservation Trend");
+  const reservationTrendSheet = workbook.addWorksheet("Tendance Réservations");
+  reservationTrendSheet.showGridLines = true;
 
-  reservationTrendSheet.columns = [
-    { header: "Label", key: "label", width: 25 },
-    { header: "Réservations", key: "value", width: 20 },
-  ];
+  reservationTrendSheet.mergeCells("A1:B2");
+  const titleCell2 = reservationTrendSheet.getCell("A1");
+  titleCell2.value = "TENDANCE DES RÉSERVATIONS";
+  titleCell2.font = { name: "Calibri", size: 12, bold: true, color: { argb: "FFFFFF" } };
+  titleCell2.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "1F4E79" } };
+  titleCell2.alignment = { horizontal: "center", vertical: "middle" };
+
+  const headerRowTrend = reservationTrendSheet.getRow(4);
+  headerRowTrend.values = ["Période / Label", "Réservations"];
+  headerRowTrend.eachCell((cell) => {
+    cell.font = { name: "Calibri", size: 11, bold: true, color: { argb: "FFFFFF" } };
+    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "2E75B6" } };
+    cell.border = thinBorder;
+  });
 
   const reservationTrend = stats.charts?.reservationTrend || [];
 
   if (reservationTrend.length === 0) {
-    reservationTrendSheet.addRow({ label: "Aucune donnée", value: 0 });
+    const row = reservationTrendSheet.addRow(["Aucune donnée", 0]);
+    row.getCell(1).border = thinBorder;
+    row.getCell(2).border = thinBorder;
   } else {
-    reservationTrend.forEach((item) => {
-      reservationTrendSheet.addRow({
-        label: item.label || "-",
-        value: safeNumber(item.value),
-      });
+    reservationTrend.forEach((item, index) => {
+      const row = reservationTrendSheet.getRow(5 + index);
+      row.values = [item.label || "-", safeNumber(item.value)];
+      
+      const c1 = row.getCell(1);
+      const c2 = row.getCell(2);
+      
+      c1.border = thinBorder;
+      c1.font = { name: "Calibri", size: 10 };
+      
+      c2.border = thinBorder;
+      c2.font = { name: "Calibri", size: 10 };
+      c2.numFormat = "#,##0";
+      c2.alignment = { horizontal: "right" };
+
+      if (index % 2 === 1) {
+        c1.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "F8FAFC" } };
+        c2.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "F8FAFC" } };
+      }
     });
   }
 
-  reservationTrendSheet.getRow(1).font = { bold: true };
-
   // Feuille 3 : Tendance d'utilisation
-  const usageTrendSheet = workbook.addWorksheet("Usage Trend");
+  const usageTrendSheet = workbook.addWorksheet("Tendance Utilisation");
+  usageTrendSheet.showGridLines = true;
 
-  usageTrendSheet.columns = [
-    { header: "Label", key: "label", width: 25 },
-    { header: "Utilisés", key: "used", width: 15 },
-    { header: "Annulés", key: "cancelled", width: 15 },
-    { header: "No-show", key: "noShow", width: 15 },
-    { header: "Réservés", key: "reserved", width: 15 },
-  ];
+  usageTrendSheet.mergeCells("A1:E2");
+  const titleCell3 = usageTrendSheet.getCell("A1");
+  titleCell3.value = "TENDANCE D'UTILISATION DES TICKETS";
+  titleCell3.font = { name: "Calibri", size: 12, bold: true, color: { argb: "FFFFFF" } };
+  titleCell3.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "1F4E79" } };
+  titleCell3.alignment = { horizontal: "center", vertical: "middle" };
+
+  const headerRowUsage = usageTrendSheet.getRow(4);
+  headerRowUsage.values = ["Période / Label", "Utilisés", "Annulées", "No-show", "Réservés"];
+  headerRowUsage.eachCell((cell) => {
+    cell.font = { name: "Calibri", size: 11, bold: true, color: { argb: "FFFFFF" } };
+    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "2E75B6" } };
+    cell.border = thinBorder;
+  });
 
   const usageTrend = stats.charts?.usageTrend || [];
 
   if (usageTrend.length === 0) {
-    usageTrendSheet.addRow({
-      label: "Aucune donnée",
-      used: 0,
-      cancelled: 0,
-      noShow: 0,
-      reserved: 0,
-    });
+    const row = usageTrendSheet.addRow(["Aucune donnée", 0, 0, 0, 0]);
+    for (let c = 1; c <= 5; c++) {
+      row.getCell(c).border = thinBorder;
+    }
   } else {
-    usageTrend.forEach((item) => {
-      usageTrendSheet.addRow({
-        label: item.label || "-",
-        used: safeNumber(item.usedTickets ?? item.used ?? 0),
-        cancelled: safeNumber(item.cancelledTickets ?? item.cancelled ?? 0),
-        noShow: safeNumber(item.noShowCount ?? item.noShow ?? 0),
-        reserved: safeNumber(item.reservedTickets ?? item.reserved ?? 0),
-      });
+    usageTrend.forEach((item, index) => {
+      const row = usageTrendSheet.getRow(5 + index);
+      row.values = [
+        item.label || "-",
+        safeNumber(item.usedTickets ?? item.used ?? 0),
+        safeNumber(item.cancelledTickets ?? item.cancelled ?? 0),
+        safeNumber(item.noShowCount ?? item.noShow ?? 0),
+        safeNumber(item.reservedTickets ?? item.reserved ?? 0),
+      ];
+
+      for (let c = 1; c <= 5; c++) {
+        const cell = row.getCell(c);
+        cell.border = thinBorder;
+        cell.font = { name: "Calibri", size: 10 };
+        
+        if (c > 1) {
+          cell.numFormat = "#,##0";
+          cell.alignment = { horizontal: "right" };
+        }
+
+        if (index % 2 === 1) {
+          cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "F8FAFC" } };
+        }
+      }
     });
   }
 
-  usageTrendSheet.getRow(1).font = { bold: true };
+  // Auto-adjust column widths
+  const autoFitColumns = (sheet) => {
+    sheet.columns.forEach((column) => {
+      let maxLen = 0;
+      column.eachCell({ includeEmpty: false }, (cell, rowNumber) => {
+        if (rowNumber <= 2) return;
+        
+        const cellVal = cell.value;
+        let displayPadding = 0;
+        if (cell.numFormat) {
+          if (cell.numFormat.includes("DH")) displayPadding = 5;
+          else if (cell.numFormat.includes("%")) displayPadding = 2;
+        }
+
+        if (cellVal !== null && cellVal !== undefined) {
+          const str = String(cellVal);
+          if (str.length > maxLen) {
+            maxLen = str.length + displayPadding;
+          }
+        }
+      });
+      column.width = Math.max(maxLen + 4, 15);
+    });
+  };
+
+  autoFitColumns(summarySheet);
+  autoFitColumns(reservationTrendSheet);
+  autoFitColumns(usageTrendSheet);
 
   return workbook;
 };
