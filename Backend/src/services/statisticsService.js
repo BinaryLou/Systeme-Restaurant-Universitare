@@ -131,7 +131,7 @@ const buildStatisticsExcelWorkbook = async (filters) => {
   const stats = await getDetailedStatistics(filters);
 
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = "RU Ticket";
+  workbook.creator = "RU Digital";
   workbook.created = new Date();
   workbook.modified = new Date();
 

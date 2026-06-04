@@ -83,7 +83,7 @@ const StudentQrCode = () => {
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8.5);
-    doc.text("Ticket numerique personnel - RU Ticket", 58, 41);
+    doc.text("Ticket numerique personnel - RU Digital", 58, 41);
 
     // Status badge
     doc.setFillColor(240, 253, 244);

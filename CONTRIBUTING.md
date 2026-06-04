@@ -1,6 +1,6 @@
-# 🤝 Guide de Contribution — RU Ticket Backend
+# 🤝 Guide de Contribution — RU Digital Backend
 
-Bienvenue dans le projet RU Ticket Backend.
+Bienvenue dans le projet RU Digital Backend.
 
 Ce document définit les règles de collaboration, les standards de code et le workflow de l’équipe.
 

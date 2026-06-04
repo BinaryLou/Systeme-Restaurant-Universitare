@@ -1,4 +1,4 @@
-# 🚀 RU Ticket --- Plan Complet Backend (Binôme)
+# 🚀 RU Digital --- Plan Complet Backend (Binôme)
 
 ------------------------------------------------------------------------
 

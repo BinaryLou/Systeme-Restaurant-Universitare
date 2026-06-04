@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="./Frontend/src/assets/logo-ru.png" alt="RU Ticket Logo" width="200"/>
+  <img src="./Frontend/src/assets/logo-ru.png" alt="RU Digital Logo" width="200"/>
   
-  # 🎓 RU Ticket - Système Restaurant Universitaire
+  # 🎓 RU Digital - Système Restaurant Universitaire
   
   **Une solution complète, moderne et sécurisée pour la gestion des repas universitaires.**
   
@@ -18,7 +18,7 @@
 
 ## 📖 À propos du projet
 
-**RU Ticket** est une plateforme intégrée conçue pour simplifier la vie des étudiants et du personnel des restaurants universitaires. L'application permet la réservation de repas, la gestion des soldes, et le contrôle d'accès fluide via un système de QR Code sécurisé.
+**RU Digital** est une plateforme intégrée conçue pour simplifier la vie des étudiants et du personnel des restaurants universitaires. L'application permet la réservation de repas, la gestion des soldes, et le contrôle d'accès fluide via un système de QR Code sécurisé.
 
 ### ✨ Fonctionnalités principales
 
