@@ -14,7 +14,7 @@ const sendResetPasswordEmail = async (toEmail, resetToken) => {
   const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/reset-password?token=${resetToken}`;
   
   const mailOptions = {
-    from: process.env.EMAIL_FROM || '"Restaurant Universitaire" <noreply@ru-ticket.com>',
+    from: process.env.EMAIL_FROM || '"Restaurant Universitaire" <noreply@ru-digital.com>',
     to: toEmail,
     subject: "Réinitialisation de votre mot de passe",
     html: `

@@ -15,7 +15,7 @@ const StaffHeader = () => {
     <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shadow-sm sticky top-0 z-30">
       <div className="flex items-center gap-3">
         <img src={logoRU} alt="Logo RU" className="w-10 h-10 object-contain" />
-        <h1 className="text-xl font-bold text-blue-700">RU Ticket Scan</h1>
+        <h1 className="text-xl font-bold text-blue-700">RU Digital Scan</h1>
         <span className="hidden md:inline-block px-2.5 py-0.5 text-xs font-semibold bg-blue-50 text-blue-600 rounded-full">
           Espace personnel
         </span>

@@ -41,7 +41,7 @@ const AdminSidebar = ({ admin, onLogout, isOpen, onClose }) => {
             <div className="flex items-center gap-3">
               <img
                 src={logoRU}
-                alt="RU Ticket"
+                alt="RU Digital"
                 className="w-10 h-10 object-contain"
               />
               <div className="leading-tight flex flex-col">

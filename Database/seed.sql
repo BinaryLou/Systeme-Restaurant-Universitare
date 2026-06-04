@@ -1,5 +1,3 @@
-USE ru_ticket;
-
 -- UTILISATEURS
 INSERT INTO utilisateur
 (nom, prenom, email, apogee, mot_de_passe_hash, solde, code_qr)

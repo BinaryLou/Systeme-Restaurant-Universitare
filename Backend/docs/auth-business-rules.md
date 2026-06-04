@@ -1,4 +1,4 @@
-# Auth Flow & Business Rules — RU Ticket
+# Auth Flow & Business Rules — RU Digital
 
 ## 🎯 Objectif
 
