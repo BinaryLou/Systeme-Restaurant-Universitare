@@ -1,7 +1,3 @@
-CREATE DATABASE IF NOT EXISTS ru_ticket;
-
-USE ru_ticket;
-
 -- TABLE: UTILISATEUR
 CREATE TABLE utilisateur (
   id_utilisateur     BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -192,4 +188,22 @@ CREATE TABLE IF NOT EXISTS menu_exceptions (
     REFERENCES administrateur(id_admin)
     ON DELETE SET NULL
     ON UPDATE CASCADE
+);
+
+CREATE TABLE admin_password_reset_tokens (
+  id_reset_token INT AUTO_INCREMENT PRIMARY KEY,
+  id_admin BIGINT UNSIGNED NOT NULL,
+  token_hash VARCHAR(255) NOT NULL,
+  expires_at DATETIME NOT NULL,
+  used_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT fk_admin_password_reset_tokens_admin
+    FOREIGN KEY (id_admin)
+    REFERENCES administrateur(id_admin)
+    ON DELETE CASCADE,
+
+  INDEX idx_admin_password_reset_tokens_admin (id_admin),
+  INDEX idx_admin_password_reset_tokens_expires_at (expires_at),
+  UNIQUE KEY uq_admin_password_reset_token_hash (token_hash)
 );
