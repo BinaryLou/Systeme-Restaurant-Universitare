@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./Frontend/src/assets/logo-ru.png" alt="RU Digital Logo" width="200"/>
+  <img src="./Frontend/src/assets/LogoBgWhite.png" alt="RU Digital Logo" width="200"/>
   
   # 🎓 RU Digital - Système Restaurant Universitaire
   
