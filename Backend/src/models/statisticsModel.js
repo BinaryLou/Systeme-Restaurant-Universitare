@@ -79,8 +79,8 @@ const getDashboardSummary = async () => {
           THEN 1 ELSE 0
         END
       ) AS no_show_count
-    FROM Reservation r
-    JOIN Service_Repas s ON s.id_service = r.id_service
+    FROM reservation r
+    JOIN service_repas s ON s.id_service = r.id_service
   `;
 
   const [rows] = await db.query(sql);
@@ -94,7 +94,7 @@ const getReservationsCountByPeriod = async (periodType, filters = {}) => {
 
   const sql = `
     SELECT COUNT(*) AS total_reservations
-    FROM Reservation r
+    FROM reservation r
     WHERE ${whereClause}
   `;
 
@@ -107,7 +107,7 @@ const getUsedTicketsCountByPeriod = async (periodType, filters = {}) => {
 
   const sql = `
     SELECT COUNT(*) AS used_tickets
-    FROM Reservation r
+    FROM reservation r
     WHERE ${whereClause}
       AND r.statut = 'VALIDEE'
   `;
@@ -121,7 +121,7 @@ const getReservedCountByPeriod = async (periodType, filters = {}) => {
 
   const sql = `
     SELECT COUNT(*) AS reserved_tickets
-    FROM Reservation r
+    FROM reservation r
     WHERE ${whereClause}
       AND r.statut = 'RESERVEE'
   `;
@@ -135,7 +135,7 @@ const getCancelledCountByPeriod = async (periodType, filters = {}) => {
 
   const sql = `
     SELECT COUNT(*) AS cancelled_tickets
-    FROM Reservation r
+    FROM reservation r
     WHERE ${whereClause}
       AND r.statut = 'ANNULEE'
   `;
@@ -156,8 +156,8 @@ const getReservationTrend = async (periodType, filters = {}) => {
         SELECT
           s.type_repas AS label,
           COUNT(*) AS value
-        FROM Reservation r
-        JOIN Service_Repas s ON s.id_service = r.id_service
+        FROM reservation r
+        JOIN service_repas s ON s.id_service = r.id_service
         WHERE DATE(r.date_repas) = ?
         GROUP BY s.type_repas
         ORDER BY s.type_repas ASC
@@ -170,7 +170,7 @@ const getReservationTrend = async (periodType, filters = {}) => {
         SELECT
           DATE(r.date_repas) AS label,
           COUNT(*) AS value
-        FROM Reservation r
+        FROM reservation r
         WHERE DATE(r.date_repas) BETWEEN ? AND ?
         GROUP BY DATE(r.date_repas)
         ORDER BY DATE(r.date_repas) ASC
@@ -183,7 +183,7 @@ const getReservationTrend = async (periodType, filters = {}) => {
         SELECT
           DATE(r.date_repas) AS label,
           COUNT(*) AS value
-        FROM Reservation r
+        FROM reservation r
         WHERE YEAR(r.date_repas) = ? AND MONTH(r.date_repas) = ?
         GROUP BY DATE(r.date_repas)
         ORDER BY DATE(r.date_repas) ASC
@@ -210,8 +210,8 @@ const getUsageTrend = async (periodType, filters = {}) => {
         SELECT
           s.type_repas AS label,
           COUNT(*) AS value
-        FROM Reservation r
-        JOIN Service_Repas s ON s.id_service = r.id_service
+        FROM reservation r
+        JOIN service_repas s ON s.id_service = r.id_service
         WHERE DATE(r.date_repas) = ?
           AND r.statut = 'VALIDEE'
         GROUP BY s.type_repas
@@ -225,7 +225,7 @@ const getUsageTrend = async (periodType, filters = {}) => {
         SELECT
           DATE(r.date_repas) AS label,
           COUNT(*) AS value
-        FROM Reservation r
+        FROM reservation r
         WHERE DATE(r.date_repas) BETWEEN ? AND ?
           AND r.statut = 'VALIDEE'
         GROUP BY DATE(r.date_repas)
@@ -239,7 +239,7 @@ const getUsageTrend = async (periodType, filters = {}) => {
         SELECT
           DATE(r.date_repas) AS label,
           COUNT(*) AS value
-        FROM Reservation r
+        FROM reservation r
         WHERE YEAR(r.date_repas) = ? AND MONTH(r.date_repas) = ?
           AND r.statut = 'VALIDEE'
         GROUP BY DATE(r.date_repas)
@@ -264,7 +264,7 @@ const getDashboardDailyReservations = async (filters = {}) => {
     SELECT
       DATE(r.date_repas) AS label,
       COUNT(*) AS value
-    FROM Reservation r
+    FROM reservation r
     WHERE DATE(r.date_repas) >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
     GROUP BY DATE(r.date_repas)
     ORDER BY DATE(r.date_repas) ASC
@@ -280,8 +280,8 @@ const getDashboardServiceSplit = async (filters = {}) => {
     SELECT
       s.type_repas AS label,
       COUNT(*) AS value
-    FROM Reservation r
-    JOIN Service_Repas s ON s.id_service = r.id_service
+    FROM reservation r
+    JOIN service_repas s ON s.id_service = r.id_service
     GROUP BY s.type_repas
     ORDER BY s.type_repas ASC
   `;
@@ -302,9 +302,9 @@ const getRecentActivity = async (limit = 10) => {
       s.type_repas,
       u.apogee,
       u.email
-    FROM Reservation r
-    JOIN Service_Repas s ON s.id_service = r.id_service
-    JOIN Utilisateur u ON u.id_utilisateur = r.id_utilisateur
+    FROM reservation r
+    JOIN service_repas s ON s.id_service = r.id_service
+    JOIN utilisateur u ON u.id_utilisateur = r.id_utilisateur
     ORDER BY r.date_creation DESC
     LIMIT ?
   `;
@@ -318,8 +318,8 @@ const getNoShowCountByPeriod = async (periodType, filters = {}) => {
 
   const sql = `
     SELECT COUNT(*) AS no_show_count
-    FROM Reservation r
-    JOIN Service_Repas s ON s.id_service = r.id_service
+    FROM reservation r
+    JOIN service_repas s ON s.id_service = r.id_service
     WHERE ${whereClause}
       AND r.statut = 'RESERVEE'
       AND TIMESTAMP(r.date_repas, s.heure_fin) < NOW()
@@ -339,8 +339,8 @@ const getCancelledTrend = async (periodType, filters = {}) => {
         SELECT
           s.type_repas AS label,
           COUNT(*) AS value
-        FROM Reservation r
-        JOIN Service_Repas s ON s.id_service = r.id_service
+        FROM reservation r
+        JOIN service_repas s ON s.id_service = r.id_service
         WHERE DATE(r.date_repas) = ?
           AND r.statut = 'ANNULEE'
         GROUP BY s.type_repas
@@ -354,7 +354,7 @@ const getCancelledTrend = async (periodType, filters = {}) => {
         SELECT
           DATE(r.date_repas) AS label,
           COUNT(*) AS value
-        FROM Reservation r
+        FROM reservation r
         WHERE DATE(r.date_repas) BETWEEN ? AND ?
           AND r.statut = 'ANNULEE'
         GROUP BY DATE(r.date_repas)
@@ -368,7 +368,7 @@ const getCancelledTrend = async (periodType, filters = {}) => {
         SELECT
           DATE(r.date_repas) AS label,
           COUNT(*) AS value
-        FROM Reservation r
+        FROM reservation r
         WHERE YEAR(r.date_repas) = ? AND MONTH(r.date_repas) = ?
           AND r.statut = 'ANNULEE'
         GROUP BY DATE(r.date_repas)
@@ -395,8 +395,8 @@ const getNoShowTrend = async (periodType, filters = {}) => {
         SELECT
           s.type_repas AS label,
           COUNT(*) AS value
-        FROM Reservation r
-        JOIN Service_Repas s ON s.id_service = r.id_service
+        FROM reservation r
+        JOIN service_repas s ON s.id_service = r.id_service
         WHERE DATE(r.date_repas) = ?
           AND r.statut = 'EN_ATTENTE'
           AND TIMESTAMP(r.date_repas, s.heure_fin) < NOW()
@@ -411,8 +411,8 @@ const getNoShowTrend = async (periodType, filters = {}) => {
         SELECT
           DATE(r.date_repas) AS label,
           COUNT(*) AS value
-        FROM Reservation r
-        JOIN Service_Repas s ON s.id_service = r.id_service
+        FROM reservation r
+        JOIN service_repas s ON s.id_service = r.id_service
         WHERE DATE(r.date_repas) BETWEEN ? AND ?
           AND r.statut = 'EN_ATTENTE'
           AND TIMESTAMP(r.date_repas, s.heure_fin) < NOW()
@@ -427,8 +427,8 @@ const getNoShowTrend = async (periodType, filters = {}) => {
         SELECT
           DATE(r.date_repas) AS label,
           COUNT(*) AS value
-        FROM Reservation r
-        JOIN Service_Repas s ON s.id_service = r.id_service
+        FROM reservation r
+        JOIN service_repas s ON s.id_service = r.id_service
         WHERE YEAR(r.date_repas) = ? AND MONTH(r.date_repas) = ?
           AND r.statut = 'EN_ATTENTE'
           AND TIMESTAMP(r.date_repas, s.heure_fin) < NOW()
